@@ -23,4 +23,13 @@ class Board
     @board[row][col] = team
     @board
   end
+
+
+  def drawBoard
+    puts @board[0][0].to_s + "|" + @board[0][1].to_s + "|" + @board[0][2].to_s
+    puts "------"
+    puts @board[1][0].to_s + "|" + @board[1][1].to_s + "|" + @board[1][2].to_s
+    puts "------"
+    puts @board[2][0].to_s + "|" + @board[2][1].to_s + "|" + @board[2][2].to_s
+  end
 end

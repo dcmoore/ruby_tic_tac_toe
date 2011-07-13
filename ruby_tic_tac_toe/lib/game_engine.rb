@@ -72,56 +72,58 @@ class GameEngine
   def runGame
     while Calculate.isGameOver?(@board) == false
       if Calculate.currentTeam(@board) == X
-        if @player1.type == "Human"
-          move = getHumanPlayersMove
-          row, col = move
-
-          if @board.spaceContents(row, col) == EMPTY
-            @board.makeMove(row, col, 1)
-            puts "Move successfully made"
-          else
-            puts "Cannot move to a space that is already full"
-          end
-        else
-          puts "Please wait, computer thinking of next move..."
-          aiMove = Calculate.aiBestMove(@board)
-          row = aiMove[0]
-          col = aiMove[1]
-
-          if @board.spaceContents(row, col) == EMPTY
-            @board.makeMove(row, col, 1)
-            puts "Computer moved to space: "
-            puts row
-            puts col
-          end
-        end
-      else  # O's turn
-        if @player2.type == "Human"
-          move = getHumanPlayersMove
-          row, col = move
-
-          if @board.spaceContents(row, col) == EMPTY
-            @board.makeMove(row, col, 2)
-            puts "Move successfully made"
-          else
-            puts "Cannot move to a space that is already full"
-          end
-        else
-          puts "Please wait, computer thinking of next move..."
-          aiMove = Calculate.aiBestMove(@board)
-          row = aiMove[0]
-          col = aiMove[1]
-
-          if @board.spaceContents(row, col) == EMPTY
-            @board.makeMove(row, col, 2)
-            puts "Computer moved to space: "
-            puts row
-            puts col
-          end
-        end      
+        runXsTurn
+      else
+        runOsTurn
       end
 
-      drawBoard
+      @board.drawBoard
+    end
+  end
+
+
+  def runXsTurn
+    if @player1.type == "Human"
+      runHumansTurn(X)
+    else
+      runComputersTurn(X)
+    end
+  end
+
+
+  def runOsTurn
+    if @player2.type == "Human"
+      runHumansTurn(O)
+    else
+      runComputersTurn(O)
+    end
+  end
+
+
+  def runComputersTurn(team)
+    puts "Please wait, computer thinking of next move..."
+    aiMove = Calculate.aiBestMove(@board)
+    row = aiMove[0]
+    col = aiMove[1]
+
+    if @board.spaceContents(row, col) == EMPTY
+      @board.makeMove(row, col, team)
+      puts "Computer moved to space: "
+      puts row
+      puts col
+    end
+  end
+
+
+  def runHumansTurn(team)
+    move = getHumanPlayersMove
+    row, col = move
+
+    if @board.spaceContents(row, col) == EMPTY
+      @board.makeMove(row, col, team)
+      puts "Move successfully made"
+    else
+      puts "Cannot move to a space that is already full"
     end
   end
 
@@ -134,11 +136,6 @@ class GameEngine
     col = move[1,1].to_i
 
     return [row, col]
-  end
-
-
-  def drawBoard
-    #TODO - fill out method
   end
 
 

@@ -10,9 +10,9 @@ describe Calculate do
   end
 
   it "self.isGameOver?(Board) - returns true if draw?(), xWin?(), or oWin?() returns true" do
-    @board.makeMove(0,0,1)
-    @board.makeMove(0,1,1)
-    @board.makeMove(0,2,1)
+    @board.makeMove(0,0,X)
+    @board.makeMove(0,1,X)
+    @board.makeMove(0,2,X)
     Calculate.isGameOver?(@board).should == true
   end
 
@@ -59,34 +59,87 @@ describe Calculate do
   end
 
   it "self.numMovesMade(Board) - returns the number of moves that have been made on the board" do
-    @board.makeMove(0,0,1)
-    @board.makeMove(1,0,2)
-    @board.makeMove(2,0,1)
-    @board.makeMove(0,1,2)
-    @board.makeMove(1,1,1)
+    @board.makeMove(0,0,X)
+    @board.makeMove(1,0,O)
+    @board.makeMove(2,0,X)
+    @board.makeMove(0,1,O)
+    @board.makeMove(1,1,X)
     Calculate.numMovesMade(@board).should == 5
   end
 
   it "self.currentTeam(Board) - returns the team who is next in line to make a move" do
-    @board.makeMove(0,0,1)
-    @board.makeMove(0,1,2)
-    @board.makeMove(0,2,1)
-    @board.makeMove(1,0,2)
-    @board.makeMove(1,1,1)
+    @board.makeMove(0,0,X)
+    @board.makeMove(0,1,O)
+    @board.makeMove(0,2,X)
+    @board.makeMove(1,0,O)
+    @board.makeMove(1,1,X)
     Calculate.currentTeam(@board).should == 2
   end
 
   it "self.aiBestMove(Board) - returns an array containing the row and column of the best possible next move" do
-    setupKiddieCornerTrap
-    Calculate.aiBestMove(@board).should == [1,1]
-    setupDoubleSideTrap
-    Calculate.aiBestMove(@board).should == [1,1]
-    setupCornerTrap
-    Calculate.aiBestMove(@board).should == [1,1]
-    setupOddTrap
-    Calculate.aiBestMove(@board).should == [1,1]
-    setupChoosingBestEmptyWinner
-    Calculate.aiBestMove(@board).should == [1,1]
+    setupXWinOnRow
+    Calculate.aiBestMove(@board).should == [0,2]
+    @board.reset
+
+    setupXWinOnCol
+    Calculate.aiBestMove(@board).should == [2,0]
+    @board.reset
+
+    setupOWinOnForDiag
+    Calculate.aiBestMove(@board).should == [2,2]
+    @board.reset
+
+    setupOWinOnRevDiag
+    Calculate.aiBestMove(@board).should == [2,0]
+    @board.reset
+
+    setupXWinChooseBestEmptyWinner
+    Calculate.aiBestMove(@board).should == [2,2]
+    @board.reset
+
+    Calculate.aiBestMove(@board).should == [1,1]  # Testing for 1st move
+
+#    setupKiddieCornerTrap
+#    Calculate.aiBestMove(@board).should == [1,1]
+#    setupDoubleSideTrap
+#    Calculate.aiBestMove(@board).should == [1,1]
+#    setupCornerTrap
+#    Calculate.aiBestMove(@board).should == [1,1]
+#    setupOddTrap
+#    Calculate.aiBestMove(@board).should == [1,1]
+#    setupChoosingBestEmptyWinner
+#    Calculate.aiBestMove(@board).should == [1,1]
+  end
+
+  def setupXWinOnRow
+    @board.makeMove(0,0,X)
+    @board.makeMove(0,1,X)
+    @board.makeMove(1,1,O)
+  end
+
+  def setupXWinOnCol
+    @board.makeMove(0,0,X)
+    @board.makeMove(1,0,X)
+    @board.makeMove(1,1,O)
+  end
+
+  def setupOWinOnForDiag
+    @board.makeMove(0,0,O)
+    @board.makeMove(1,1,O)
+    @board.makeMove(1,2,X)
+  end
+
+  def setupOWinOnRevDiag
+    @board.makeMove(0,2,O)
+    @board.makeMove(1,1,O)
+    @board.makeMove(0,0,X)
+  end
+
+  def setupXWinChooseBestEmptyWinner
+    @board.makeMove(0,0,O)
+    @board.makeMove(0,1,O)
+    @board.makeMove(2,0,X)
+    @board.makeMove(2,1,X)
   end
 
   def setupKiddieCornerTrap

@@ -11,7 +11,7 @@ describe Calculate do
     failFlag = false
     numFails = 0
     board = Board.new(3,3)
-    numGames = 50
+    numGames = 5
     while numGames != 0
       while Calculate.isGameOver?(board) == false
         if Calculate.currentTeam(board) == 1
@@ -58,7 +58,7 @@ describe Calculate do
     failFlag = false
     numFails = 0
     board = Board.new(3,3)
-    numGames = 50
+    numGames = 5
     while numGames != 0
       while Calculate.isGameOver?(board) == false
         if Calculate.currentTeam(board) == 1

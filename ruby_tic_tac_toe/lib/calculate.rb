@@ -65,7 +65,7 @@ class Calculate
         return preCalculatedMove
       end
 
-      wld = createWLDArray(board, currentTeam(board), currentTeam(board), 0)  # Create win/loss/draw array
+      wld = createWLDArray(board, currentTeam(board), currentTeam(board), 0)  # Create a win/loss/draw array
       calculatedMove = calculateBestMove(board, wld)
 
       return calculatedMove
@@ -75,7 +75,7 @@ class Calculate
     private # The rest of the methods in this class are private
 
     def preCalculatedMoves(board)
-      emptyWinner = findEmptyWinners(board)
+      emptyWinner = findBestEmptyWinner(board, Calculate.currentTeam(board))
       if emptyWinner != -1
         return emptyWinner
       end
@@ -89,257 +89,192 @@ class Calculate
     end
 
 
+    def findBestEmptyWinner(board, team)
+      boardCopy = cloneBoard(board)
+      emptyWinners = getEmptyWinnersArray(boardCopy)
+
+      emptyWinners.length.times { |i|
+        boardCopy.makeMove(emptyWinners[i][0], emptyWinners[i][1], team)
+        if team == X
+          if Calculate.xWin?(boardCopy) == true
+            return emptyWinners[i]
+          end
+        else
+          if Calculate.oWin?(boardCopy) == true
+            return emptyWinners[i]
+          end
+        end
+      }
+
+      if emptyWinners.length != 0
+        return emptyWinners[0]
+      end
+      return -1
+    end
+
+
+    def cloneBoard(board)
+      boardCopy = Board.new(board.dimRows, board.dimCols)
+      board.dimRows.times { |row|
+        board.dimCols.times { |col|
+          boardCopy.makeMove(row, col, board.spaceContents(row, col))
+        }
+      }
+
+      return boardCopy
+    end
+
+
+    def getEmptyWinnersArray(board)
+      emptyWinners = []
+
+      emptyWinnersOnARow = checkAllRowsForEmptyWinner(board)
+      emptyWinnersOnARow.length.times { |i|
+        emptyWinners.push(emptyWinnersOnARow[i])
+      }
+
+      emptyWinnersOnACol = checkAllColsForEmptyWinner(board)
+      emptyWinnersOnACol.length.times { |i|
+        emptyWinners.push(emptyWinnersOnACol[i])
+      }
+
+      emptyWinnersOnAForwardDiag = checkForwardDiagForEmptyWinner(board)
+      emptyWinnersOnAForwardDiag.length.times { |i|
+        emptyWinners.push(emptyWinnersOnAForwardDiag[i])
+      }
+
+      emptyWinnersOnAReverseDiag = checkReverseDiagForEmptyWinner(board)
+      emptyWinnersOnAReverseDiag.length.times { |i|
+        emptyWinners.push(emptyWinnersOnAReverseDiag[i])
+      }
+
+      return emptyWinners
+    end
+
+
+    def checkAllRowsForEmptyWinner(board)
+      emptyWinners = []
+      board.dimRows.times { |row|
+        groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(row,n)})
+        if groupOfCells[0] == "EmptyWinner"
+          emptyWinners.push([row,groupOfCells[1]])
+        end
+      }
+
+      return emptyWinners
+    end
+
+
+    def checkAllColsForEmptyWinner(board)
+      emptyWinners = []
+      board.dimRows.times { |col|
+        groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(n,col)})
+        if groupOfCells[0] == "EmptyWinner"
+          emptyWinners.push([groupOfCells[1],col])
+        end
+      }
+
+      return emptyWinners
+    end
+
+
+    def checkForwardDiagForEmptyWinner(board)
+      emptyWinners = []
+
+      groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(n,n)})
+      if groupOfCells[0] == "EmptyWinner"
+        emptyWinners.push([groupOfCells[1],groupOfCells[1]])
+      end
+
+      return emptyWinners
+    end
+
+
+    def checkReverseDiagForEmptyWinner(board)
+      emptyWinners = []
+
+      groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(n,(board.dimCols-1) - n)})
+      if groupOfCells[0] == "EmptyWinner"
+        emptyWinners.push([groupOfCells[1],((board.dimCols-1)-groupOfCells[1])])
+      end
+
+      return emptyWinners
+    end
+
+
     def hardCodedMoves(board)
-      if board.dimRows == 3  # To avoid double corner trap that the algorithm doesn't pick up on
-        if (board.spaceContents(1,2) == X && board.spaceContents(2,1) == X && board.spaceContents(2,2) == EMPTY) || (board.spaceContents(1,2) == O && board.spaceContents(2,1) == O && board.spaceContents(2,2) == EMPTY)
-          return [2,2]
-        end
+      optimizedMove = optimizeTheAlgorithm(board)
+      if optimizedMove != -1
+        return optimizedMove
+      end
 
-        if (board.spaceContents(0,1) == X && board.spaceContents(1,0) == X && board.spaceContents(0,0) == EMPTY) || (board.spaceContents(0,1) == O && board.spaceContents(1,0) == O && board.spaceContents(0,0) == EMPTY)
-          return [0,0]
-        end
-
-        if (board.spaceContents(1,0) == X && board.spaceContents(2,1) == X && board.spaceContents(2,0) == EMPTY) || (board.spaceContents(1,0) == O && board.spaceContents(2,1) == O && board.spaceContents(2,0) == EMPTY)
-          return [2,0]
-        end
-
-        if (board.spaceContents(0,1) == X && board.spaceContents(1,2) == X && board.spaceContents(0,2) == EMPTY) || (board.spaceContents(0,1) == O && board.spaceContents(1,2) == O && board.spaceContents(0,2) == EMPTY)
-          return [0,2]
-        end
-
-        if board.spaceContents(1,1) == X && Calculate.numMovesMade(board) == 1  # To optimize speed
-          return [0,0]
-        end
-
-        if board.spaceContents(1,1) == EMPTY  # To optimize speed
-          return [1,1]
-        end
-
-        if (Calculate.numMovesMade(board) == 3 && board.spaceContents(1,1) != 0 && board.spaceContents(0,0) == 0) && (board.spaceContents(2,0) == 0 && board.spaceContents(0,2) == 0)
-          return [0,0]
-        end
-
-        if Calculate.numMovesMade(board) == 3 && board.spaceContents(1,1) != 0 && board.spaceContents(2,2) == 0 && (board.spaceContents(2,0) == 0 && board.spaceContents(0,2) == 0)
-          return [2,2]
-        end
+      missedTrapMove = trapsThatTheAlgorithmDoesntPickUp(board)
+      if missedTrapMove != -1
+        return missedTrapMove
       end
 
       return -1
     end
 
 
-    def findEmptyWinners(board)
-      emptyWinnerArray = []
-
-      #Checking Rows
-      row = 0
-      while row < board.dimRows
-        col, numTeamsEncountered, emptySpacesEncountered, currentTeam = 0, 0, 0, 0
-        emptySpaceLocation = []
-        while col < board.dimCols
-          if board.spaceContents(row, col) != 0
-            if currentTeam == 0
-              currentTeam = board.spaceContents(row, col)
-              numTeamsEncountered = 1
-            end
-            if currentTeam != board.spaceContents(row, col)
-              numTeamsEncountered += 1
-            end
-          else
-            emptySpaceLocation = [row,col]
-            emptySpacesEncountered += 1
-          end
-
-          col += 1
-        end
-
-        if numTeamsEncountered == 1 && emptySpacesEncountered == 1
-          emptyWinnerArray.push(emptySpaceLocation)
-        end
-
-        row += 1
+    def optimizeTheAlgorithm(board)
+      if board.spaceContents(1,1) == X && Calculate.numMovesMade(board) == 1  # To optimize speed
+        return [0,0]
       end
 
-
-      #Checking Columns
-      col = 0
-      while col < board.dimRows
-        row, numTeamsEncountered, emptySpacesEncountered, currentTeam = 0, 0, 0, 0
-        emptySpaceLocation = []
-        while row < board.dimCols
-          if board.spaceContents(row, col) != 0
-            if currentTeam == 0
-              currentTeam = board.spaceContents(row, col)
-              numTeamsEncountered = 1
-            end
-            if currentTeam != board.spaceContents(row, col)
-              numTeamsEncountered += 1
-            end
-          else
-            emptySpaceLocation = [row,col]
-            emptySpacesEncountered += 1
-          end
-
-          row += 1
-        end
-
-        if numTeamsEncountered == 1 && emptySpacesEncountered == 1
-          emptyWinnerArray.push(emptySpaceLocation)
-        end
-
-        col += 1
+      if board.spaceContents(1,1) == EMPTY  # To optimize speed
+        return [1,1]
       end
-
-
-      #Checking Forward Diagonal
-      n, numTeamsEncountered, emptySpacesEncountered, currentTeam = 0, 0, 0, 0
-      emptySpaceLocation = []
-      while n < board.dimCols
-        if board.spaceContents(n, n) != 0
-          if currentTeam == 0
-            currentTeam = board.spaceContents(n, n)
-            numTeamsEncountered = 1
-          end
-          if currentTeam != board.spaceContents(n, n)
-            numTeamsEncountered += 1
-          end
-        else
-          emptySpaceLocation = [n,n]
-          emptySpacesEncountered += 1
-        end
-
-        n += 1
-      end
-
-      if numTeamsEncountered == 1 && emptySpacesEncountered == 1
-        emptyWinnerArray.push(emptySpaceLocation)
-      end
-
-      #Checking Reverse Diagonal
-      n, numTeamsEncountered, emptySpacesEncountered, currentTeam = 0, 0, 0, 0
-      emptySpaceLocation = []
-      while n < board.dimCols
-        if board.spaceContents(n,(board.dimCols-1) - n) != 0
-          if currentTeam == 0
-            currentTeam = board.spaceContents(n,(board.dimCols-1) - n)
-            numTeamsEncountered = 1
-          end
-          if currentTeam != board.spaceContents(n,(board.dimCols-1) - n)
-            numTeamsEncountered += 1
-          end
-        else
-          emptySpaceLocation = [n,(board.dimCols-1) - n]
-          emptySpacesEncountered += 1
-        end
-
-        n += 1
-      end
-
-      if numTeamsEncountered == 1 && emptySpacesEncountered == 1
-        emptyWinnerArray.push(emptySpaceLocation)
-      end
-
-
-      #TODO - Go through all empty winners and find the most beneficial one
-      i = 0
-      while i < emptyWinnerArray.length
-        if Calculate.currentTeam(board) == 1
-          board.makeMove(emptyWinnerArray[i][0], emptyWinnerArray[i][1], 1)
-          if Calculate.xWin?(board) == true
-            board.makeMove(emptyWinnerArray[i][0], emptyWinnerArray[i][1], 0)
-            return emptyWinnerArray[i]
-          end
-          board.makeMove(emptyWinnerArray[i][0], emptyWinnerArray[i][1], 0)
-        else
-          return emptyWinnerArray[i]
-        end
-
-        i += 1
-      end      
 
       return -1
     end
 
 
     def createWLDArray(board, aiTeam, curTeam, depth)
-      wld = Array.new(board.dimRows) {Array.new(board.dimRows) {Array.new(3,0)}}
+      wld = Array.new(board.dimRows) {Array.new(board.dimRows) {Array.new(3,EMPTY)}}
 
       # Loop through empty spaces to fill the wld array out
-      row = 0
-      while row < board.dimRows
-        col = 0
-        while col < board.dimCols
+      board.dimRows.times { |row|
+        board.dimCols.times { |col|
           # Is this an empty space?
           if board.spaceContents(row, col) == 0
+puts "Moved: " + row.to_s + " " + col.to_s + " " + Calculate.currentTeam(board).to_s + " depth: " + depth.to_s
             board.makeMove(row, col, currentTeam(board))  # Make a hypothetical move
+board.drawBoard
+puts
 
             if Calculate.isGameOver?(board) == true
+puts "game over. depth: " + depth.to_s
               wld = updateWLD(row, col, aiTeam, board, wld)
               board.makeMove(row, col, 0)  # Take back hypothetical move
-              return wld
+              next
             end
 
-            # Recursively call aiBestMove at 1 more level of depth
-            tempArray = createWLDArray(board, aiTeam, currentTeam(board), depth+1)
-
-            # Add return value (array) of recursive call to wld array
-            r = 0
-            while r < board.dimRows
-              c = 0
-              while c < board.dimCols
-                wld[r][c][0] += tempArray[r][c][0]
-                wld[r][c][1] += tempArray[r][c][1]
-                wld[r][c][2] += tempArray[r][c][2]
-
-                c += 1
-              end
-              r += 1
-            end
-
-            # Take back hypothetical move
-            board.makeMove(row, col, 0)
+            tempArray = createWLDArray(board, aiTeam, currentTeam(board), depth+1)  # Recursively call aiBestMove at 1 more level of depth
+puts "end recursive call. depth: " + depth.to_s
+            wld = addRecursedWLDVals(tempArray, wld, board)  # Add return value (array) of recursive call to wld array
+            board.makeMove(row, col, 0)  # Take back hypothetical move
           end
+        }
+      }
 
-          col += 1
-        end
-
-        row += 1
-      end
-
-      # If the loop is over, return this depth's completed wld array
-      return wld
+      return wld  # If the loop is over, return this depth's completed wld array
     end
 
 
     def updateWLD(row, col, aiTeam, board, wld)
       if Calculate.oWin?(board) == true
-        if aiTeam == 2
-          wld[row][col][0] += 1
-
-          if findEmptyWinners(board) != -1  # Heavily wieghs traps
-            wld[row][col][0] += 3
-          end
+        if aiTeam == O
+          wld = updateWins(wld, board, aiTeam, row, col)
         else
-          wld[row][col][1] += 1
-
-          if findEmptyWinners(board) != -1  # Heavily wieghs traps
-            wld[row][col][1] += 100000
-          end
+          wld = updateWins(wld, board, aiTeam, row, col)
         end
       end
       if Calculate.xWin?(board) == true
-        if aiTeam == 2
-          wld[row][col][1] += 1
-
-          if findEmptyWinners(board) != -1  # Heavily wieghs traps
-            wld[row][col][1] += 100000
-          end
+        if aiTeam == O
+          wld = updateLosses(wld, board, aiTeam, row, col)
         else
-          wld[row][col][0] += 1
-
-          if findEmptyWinners(board) != -1  # Heavily wieghs traps
-            wld[row][col][0] += 3
-          end
+          wld = updateWins(wld, board, aiTeam, row, col)
         end
       end
       if Calculate.draw?(board) == true
@@ -350,12 +285,45 @@ class Calculate
     end
 
 
+    def updateWins(wld, board, aiTeam, row, col)
+      wld[row][col][0] += 1
+
+      if findBestEmptyWinner(board, aiTeam) != -1  # Heavily weighs traps
+        wld[row][col][0] += 3
+      end
+
+      return wld
+    end
+
+
+    def updateLosses(wld, board, aiTeam, row, col)
+      wld[row][col][1] += 1
+
+      if (findBestEmptyWinner(board, X) != -1) || (findBestEmptyWinner(board, O) != -1)  # Heavily weighs traps
+        wld[row][col][1] += 100000
+      end
+
+      return wld
+    end
+
+
+    def addRecursedWLDVals(tempArray, wld, board)
+      board.dimRows.times { |r|
+        board.dimCols.times { |c|
+          wld[r][c][0] += tempArray[r][c][0]
+          wld[r][c][1] += tempArray[r][c][1]
+          wld[r][c][2] += tempArray[r][c][2]
+        }
+      }
+
+      return wld
+    end
+
+
     def calculateBestMove(board, wld)
       bestMove = [0, 0]
-      row = 0
-      while row < board.dimRows
-        col = 0
-        while col < board.dimCols
+      board.dimRows.times { |row|
+        board.dimCols.times { |col|
           wld[row][col][0] += 1
           wld[row][col][1] += 1
           wld[row][col][2] += 1
@@ -369,12 +337,10 @@ class Calculate
               bestMove = [row, col]
             end
           end
+        }
+      }
 
-          col += 1
-        end
-
-        row += 1
-      end
+      return bestMove
     end
 
 
@@ -391,12 +357,12 @@ class Calculate
     end
 
 
-    def checkAllColsForWin(board)
-      board.dimCols.times { |col|
-        isThereAColWinner = checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(n,col)})
+    def checkAllRowsForWin(board)
+      board.dimRows.times { |row|
+        groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(row,n)})
 
-        if isThereAColWinner != 0
-          return isThereAColWinner
+        if groupOfCells[0] == "Win"
+          return groupOfCells[1]
         end
       }
 
@@ -404,12 +370,12 @@ class Calculate
     end
 
 
-    def checkAllRowsForWin(board)
-      board.dimRows.times { |row|
-        isThereARowWinner = checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(row,n)})
+    def checkAllColsForWin(board)
+      board.dimCols.times { |col|
+        groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(n,col)})
 
-        if isThereARowWinner != 0
-          return isThereARowWinner
+        if groupOfCells[0] == "Win"
+          return groupOfCells[1]
         end
       }
 
@@ -418,21 +384,32 @@ class Calculate
 
 
     def checkForwardDiagForWin(board)
-      return checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(n,n)})
+      groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(n,n)})
+
+      if groupOfCells[0] == "Win"
+        return groupOfCells[1]
+      end
+      return 0
     end
 
 
     def checkReverseDiagForWin(board)
-      return checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(n,(board.dimCols-1) - n)})
+      groupOfCells = checkCellGroup(board, Proc.new {|n| board.spaceContents(n,(board.dimCols-1) - n)})
+
+      if groupOfCells[0] == "Win"
+        return groupOfCells[1]
+      end
+      return 0
     end
 
 
     #TODO - break this method into two methods with at max 10 lines
-    def checkCellGroupForWin(board, getSpaceFromGroup)
-      numTeamsEncountered, emptySpacesEncountered, currentTeam = 0, 0, EMPTY
+    def checkCellGroup(board, getSpaceFromGroup)
+      numTeamsEncountered, emptySpacesEncountered, emptySpaceLocation, currentTeam = 0, 0, 0, EMPTY
 
       board.dimCols.times { |i|
         if getSpaceFromGroup.call(i) == EMPTY
+          emptySpaceLocation = i
           emptySpacesEncountered += 1
         else
           if currentTeam == EMPTY
@@ -445,16 +422,18 @@ class Calculate
         end
       }
 
-      return analyzeCellGroupData(numTeamsEncountered, emptySpacesEncountered, currentTeam)
+      return analyzeCellGroupData(numTeamsEncountered, emptySpacesEncountered, currentTeam, emptySpaceLocation)
     end
 
 
-    def analyzeCellGroupData(numTeamsEncountered, emptySpacesEncountered, currentTeam)
+    def analyzeCellGroupData(numTeamsEncountered, emptySpacesEncountered, currentTeam, emptySpaceLocation)
       if numTeamsEncountered == 1 && emptySpacesEncountered == 0
-        return currentTeam
+        return ["Win", currentTeam]
+      elsif numTeamsEncountered == 1 && emptySpacesEncountered == 1
+        return ["EmptyWinner", emptySpaceLocation]
       end
 
-      return 0
+      return ["NothingInteresting", 0]
     end
   end
 end
