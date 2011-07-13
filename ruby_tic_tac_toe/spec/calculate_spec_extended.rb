@@ -16,7 +16,7 @@ describe Calculate do
       while Calculate.isGameOver?(board) == false
         if Calculate.currentTeam(board) == 1
           aiMove = Calculate.aiBestMove(board)
-          board.makeMove(aiMove[0], aiMove[1], 1)
+          board.makeMove(aiMove[0], aiMove[1], X)
         else
           row = rand(board.dimRows)
           col = rand(board.dimCols)
@@ -25,7 +25,7 @@ describe Calculate do
             col = rand(board.dimCols)
           end
 
-          board.makeMove(row, col, 2)
+          board.makeMove(row, col, O)
         end
 
         if Calculate.oWin?(board) == true
@@ -69,10 +69,10 @@ describe Calculate do
             col = rand(board.dimCols)
           end
 
-          board.makeMove(row, col, 1)
+          board.makeMove(row, col, X)
         else
           aiMove = Calculate.aiBestMove(board)
-          board.makeMove(aiMove[0], aiMove[1], 2)
+          board.makeMove(aiMove[0], aiMove[1], O)
         end
 
         if Calculate.xWin?(board) == true

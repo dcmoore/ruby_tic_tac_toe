@@ -230,6 +230,29 @@ class Calculate
     end
 
 
+    def trapsThatTheAlgorithmDoesntPickUp(board)
+      if (board.spaceContents(1,2) == X && board.spaceContents(2,1) == X && board.spaceContents(2,2) == EMPTY) || (board.spaceContents(1,2) == O && board.spaceContents(2,1) == O && board.spaceContents(2,2) == EMPTY)
+        return [2,2]
+      end
+
+      if (board.spaceContents(0,1) == X && board.spaceContents(1,0) == X && board.spaceContents(0,0) == EMPTY) || (board.spaceContents(0,1) == O && board.spaceContents(1,0) == O && board.spaceContents(0,0) == EMPTY)
+        return [0,0]
+      end
+
+      if (board.spaceContents(1,0) == X && board.spaceContents(2,1) == X && board.spaceContents(2,0) == EMPTY) || (board.spaceContents(1,0) == O && board.spaceContents(2,1) == O && board.spaceContents(2,0) == EMPTY)
+        return [2,0]
+      end
+
+      if (board.spaceContents(0,1) == X && board.spaceContents(1,2) == X && board.spaceContents(0,2) == EMPTY) || (board.spaceContents(0,1) == O && board.spaceContents(1,2) == O && board.spaceContents(0,2) == EMPTY)
+        return [0,2]
+      end
+
+      if board.spaceContents(1,1) == X && Calculate.numMovesMade(board) == 1  # To optimize speed
+        return [0,0]
+      end
+    end
+
+
     def createWLDArray(board, aiTeam, curTeam, depth)
       wld = Array.new(board.dimRows) {Array.new(board.dimRows) {Array.new(3,EMPTY)}}
 
@@ -238,20 +261,20 @@ class Calculate
         board.dimCols.times { |col|
           # Is this an empty space?
           if board.spaceContents(row, col) == 0
-puts "Moved: " + row.to_s + " " + col.to_s + " " + Calculate.currentTeam(board).to_s + " depth: " + depth.to_s
+#puts "Moved: " + row.to_s + " " + col.to_s + " " + Calculate.currentTeam(board).to_s + " depth: " + depth.to_s
             board.makeMove(row, col, currentTeam(board))  # Make a hypothetical move
-board.drawBoard
-puts
+#board.drawBoard
+#puts
 
             if Calculate.isGameOver?(board) == true
-puts "game over. depth: " + depth.to_s
+#puts "game over. depth: " + depth.to_s
               wld = updateWLD(row, col, aiTeam, board, wld)
               board.makeMove(row, col, 0)  # Take back hypothetical move
               next
             end
 
             tempArray = createWLDArray(board, aiTeam, currentTeam(board), depth+1)  # Recursively call aiBestMove at 1 more level of depth
-puts "end recursive call. depth: " + depth.to_s
+#puts "end recursive call. depth: " + depth.to_s
             wld = addRecursedWLDVals(tempArray, wld, board)  # Add return value (array) of recursive call to wld array
             board.makeMove(row, col, 0)  # Take back hypothetical move
           end
