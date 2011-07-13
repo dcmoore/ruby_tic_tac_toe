@@ -22,11 +22,6 @@ describe Board do
     @board.spaceContents(0,0).should == 1
   end
 
-  it "isEmpty?(row, col) - returns true if no team had made a move on that spaces" do
-    @board.makeMove(2,2,1)
-    @board.spaceContents(2,2).should == 1
-  end
-
   it "dimRows - returns the number of rows in the board" do
     @board.dimRows.should == 3
   end

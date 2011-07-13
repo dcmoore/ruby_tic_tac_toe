@@ -1,3 +1,5 @@
+require '../constants'
+
 class Calculate
   class << self
     def isGameOver?(board)
@@ -9,15 +11,15 @@ class Calculate
 
 
     def draw?(board)
-      if checkForDraw(board) == 1
-        return true
+      if xWin?(board) == true || oWin?(board) == true
+        return false
       end
-      return false
+      return isBoardFull?(board)
     end
 
 
     def xWin?(board)
-      if checkAllColsForWin(board) == 1 || checkAllRowsForWin(board) == 1 || checkBothDiagsForWin(board) == 1
+      if checkAllColsForWin(board) == X || checkAllRowsForWin(board) == X || checkForwardDiagForWin(board) == X || checkReverseDiagForWin(board) == X
         return true
       end
       return false
@@ -25,134 +27,106 @@ class Calculate
 
 
     def oWin?(board)
-      if checkAllColsForWin(board) == 2 || checkAllRowsForWin(board) == 2 || checkBothDiagsForWin(board) == 2
+      if checkAllColsForWin(board) == O || checkAllRowsForWin(board) == O || checkForwardDiagForWin(board) == O || checkReverseDiagForWin(board) == O
         return true
       end
       return false
     end
 
 
-    def turnNumber(board)
-      n, row = 0, 0
+    def numMovesMade(board)
+      count = 0
 
-      while row < board.dimRows
-        col = 0
-        while col < board.dimCols
-          if board.spaceContents(row,col) != 0
-            n += 1
+      board.dimRows.times { |row|
+        board.dimCols.times { |col|
+          if board.spaceContents(row,col) != EMPTY
+            count += 1
           end
+        }
+      }
 
-          col += 1
-        end
-        row += 1
-      end
-
-      return n
+      return count
     end
 
 
     def currentTeam(board)
-      currentTurn = turnNumber(board)
+      currentTurn = numMovesMade(board)
       if currentTurn % 2 == 0
-        return 1
+        return X
       else
-        return 2
+        return O
       end
     end
 
 
     def aiBestMove(board)
-      preCalculatedMove = hardCodedMove(board)
+      preCalculatedMove = preCalculatedMoves(board)
       if preCalculatedMove != -1
         return preCalculatedMove
       end
 
-      # Create X win/O win/draw array
-      wld = createWLDArray(board, currentTeam(board), currentTeam(board), 0)
+      wld = createWLDArray(board, currentTeam(board), currentTeam(board), 0)  # Create win/loss/draw array
+      calculatedMove = calculateBestMove(board, wld)
 
-      # Go through wld array and calculate the best move
-      bestMove = [0, 0]
-      row = 0
-      while row < board.dimRows
-        col = 0
-        while col < board.dimCols
-          wld[row][col][0] += 1
-          wld[row][col][1] += 1
-          wld[row][col][2] += 1
-          if wld[row][col] != [1,1,1]  # Ensures that the spaces being evaluated are empty
-            if bestMove == [0,0]
-              bestMove = [row,col]  # Makes sure that best move by default equals an empty space on the board
-            end
-
-            tempScore = ((2*wld[row][col][0]) + wld[row][col][2]) / (3*wld[row][col][1])
-            if tempScore > ((2*wld[bestMove[0]][bestMove[1]][0]) + wld[bestMove[0]][bestMove[1]][2]) / (3*wld[bestMove[0]][bestMove[1]][1])
-              bestMove = [row, col]
-            end
-          end
-
-          col += 1
-        end
-
-        row += 1
-      end
-
-      # Return the best move
-      return bestMove
+      return calculatedMove
     end
 
 
     private # The rest of the methods in this class are private
 
-
-    def hardCodedMove(board)
-      team1 = 1
-      team2 = 2
-
+    def preCalculatedMoves(board)
       emptyWinner = findEmptyWinners(board)
       if emptyWinner != -1
         return emptyWinner
       end
 
-      if board.dimRows == 3  # To avoid double corner trap that the algorithm doesn't pick up on
-        if (board.spaceContents(1,2) == team1 && board.spaceContents(2,1) == team1 && board.spaceContents(2,2) == 0) || (board.spaceContents(1,2) == team2 && board.spaceContents(2,1) == team2 && board.spaceContents(2,2) == 0)
-          return [2,2]
-        end
-
-        if (board.spaceContents(0,1) == team1 && board.spaceContents(1,0) == team1 && board.spaceContents(0,0) == 0) || (board.spaceContents(0,1) == team2 && board.spaceContents(1,0) == team2 && board.spaceContents(0,0) == 0)
-          return [0,0]
-        end
-
-        if (board.spaceContents(1,0) == team1 && board.spaceContents(2,1) == team1 && board.spaceContents(2,0) == 0) || (board.spaceContents(1,0) == team2 && board.spaceContents(2,1) == team2 && board.spaceContents(2,0) == 0)
-          return [2,0]
-        end
-
-        if (board.spaceContents(0,1) == team1 && board.spaceContents(1,2) == team1 && board.spaceContents(0,2) == 0) || (board.spaceContents(0,1) == team2 && board.spaceContents(1,2) == team2 && board.spaceContents(0,2) == 0)
-          return [0,2]
-        end
-
-        if board.spaceContents(1,1) == 1 && Calculate.turnNumber(board) == 1  # To optimize speed
-          return [0,0]
-        end
-
-        if board.spaceContents(1,1) == 0  # To optimize speed
-          return [1,1]
-        end
-
-        if (Calculate.turnNumber(board) == 3 && board.spaceContents(1,1) != 0 && board.spaceContents(0,0) == 0) && (board.spaceContents(2,0) == 0 && board.spaceContents(0,2) == 0)
-          return [0,0]
-        end
-
-        if Calculate.turnNumber(board) == 3 && board.spaceContents(1,1) != 0 && board.spaceContents(2,2) == 0 && (board.spaceContents(2,0) == 0 && board.spaceContents(0,2) == 0)
-          return [2,2]
-        end
-
-#        if (board.spaceContents(1,0) == 0 && board.spaceContents(1,1) == team1 && board.spaceContents(1,2) == team1) || (board.spaceContents(1,0) == 0 && board.spaceContents(1,1) == team2 && board.spaceContents(1,2) == team2)
-#          return [1,0]
-#        end
+      hardCodedMove = hardCodedMoves(board)
+      if hardCodedMove != -1
+        return hardCodedMove
       end
 
       return -1
     end
+
+
+    def hardCodedMoves(board)
+      if board.dimRows == 3  # To avoid double corner trap that the algorithm doesn't pick up on
+        if (board.spaceContents(1,2) == X && board.spaceContents(2,1) == X && board.spaceContents(2,2) == EMPTY) || (board.spaceContents(1,2) == O && board.spaceContents(2,1) == O && board.spaceContents(2,2) == EMPTY)
+          return [2,2]
+        end
+
+        if (board.spaceContents(0,1) == X && board.spaceContents(1,0) == X && board.spaceContents(0,0) == EMPTY) || (board.spaceContents(0,1) == O && board.spaceContents(1,0) == O && board.spaceContents(0,0) == EMPTY)
+          return [0,0]
+        end
+
+        if (board.spaceContents(1,0) == X && board.spaceContents(2,1) == X && board.spaceContents(2,0) == EMPTY) || (board.spaceContents(1,0) == O && board.spaceContents(2,1) == O && board.spaceContents(2,0) == EMPTY)
+          return [2,0]
+        end
+
+        if (board.spaceContents(0,1) == X && board.spaceContents(1,2) == X && board.spaceContents(0,2) == EMPTY) || (board.spaceContents(0,1) == O && board.spaceContents(1,2) == O && board.spaceContents(0,2) == EMPTY)
+          return [0,2]
+        end
+
+        if board.spaceContents(1,1) == X && Calculate.numMovesMade(board) == 1  # To optimize speed
+          return [0,0]
+        end
+
+        if board.spaceContents(1,1) == EMPTY  # To optimize speed
+          return [1,1]
+        end
+
+        if (Calculate.numMovesMade(board) == 3 && board.spaceContents(1,1) != 0 && board.spaceContents(0,0) == 0) && (board.spaceContents(2,0) == 0 && board.spaceContents(0,2) == 0)
+          return [0,0]
+        end
+
+        if Calculate.numMovesMade(board) == 3 && board.spaceContents(1,1) != 0 && board.spaceContents(2,2) == 0 && (board.spaceContents(2,0) == 0 && board.spaceContents(0,2) == 0)
+          return [2,2]
+        end
+      end
+
+      return -1
+    end
+
 
     def findEmptyWinners(board)
       emptyWinnerArray = []
@@ -376,90 +350,110 @@ class Calculate
     end
 
 
-    def checkForDraw(board)
+    def calculateBestMove(board, wld)
+      bestMove = [0, 0]
       row = 0
       while row < board.dimRows
         col = 0
         while col < board.dimCols
-          if board.spaceContents(col, row) == 0
-            return 0
+          wld[row][col][0] += 1
+          wld[row][col][1] += 1
+          wld[row][col][2] += 1
+          if wld[row][col] != [1,1,1]  # Ensures that the spaces being evaluated are empty
+            if bestMove == [0,0]
+              bestMove = [row,col]  # Makes sure that best move by default equals an empty space on the board
+            end
+
+            tempScore = ((2*wld[row][col][0]) + wld[row][col][2]) / (3*wld[row][col][1])
+            if tempScore > ((2*wld[bestMove[0]][bestMove[1]][0]) + wld[bestMove[0]][bestMove[1]][2]) / (3*wld[bestMove[0]][bestMove[1]][1])
+              bestMove = [row, col]
+            end
           end
+
           col += 1
         end
+
         row += 1
       end
+    end
 
-      return 1
+
+    def isBoardFull?(board)
+      board.dimRows.times { |row|
+        board.dimCols.times { |col|
+          if board.spaceContents(col, row) == EMPTY
+            return false
+          end
+        }
+      }
+
+      return true
     end
 
 
     def checkAllColsForWin(board)
-      col = 0
-      while col < board.dimCols
-        isThereAColWinner = inspectCellGroup(board, Proc.new {|n| board.spaceContents(n,col)})
+      board.dimCols.times { |col|
+        isThereAColWinner = checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(n,col)})
 
         if isThereAColWinner != 0
           return isThereAColWinner
         end
-        col += 1
-      end
+      }
 
       return 0
     end
 
 
     def checkAllRowsForWin(board)
-      row = 0
-      while row < board.dimRows
-        isThereARowWinner = inspectCellGroup(board, Proc.new {|n| board.spaceContents(row,n)})
+      board.dimRows.times { |row|
+        isThereARowWinner = checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(row,n)})
 
         if isThereARowWinner != 0
           return isThereARowWinner
         end
-        row += 1
-      end
+      }
 
       return 0
     end
 
 
-    def checkBothDiagsForWin(board)
-      isThereAForwardDiagonalWinner = inspectCellGroup(board, Proc.new {|n| board.spaceContents(n,n)})
-      isThereAReverseDiagonalWinner = inspectCellGroup(board, Proc.new {|n| board.spaceContents(n,(board.dimCols-1) - n)})
-
-      if isThereAForwardDiagonalWinner != 0
-        return isThereAForwardDiagonalWinner
-      end
-
-      if isThereAReverseDiagonalWinner != 0
-        return isThereAReverseDiagonalWinner
-      end
-      return 0
+    def checkForwardDiagForWin(board)
+      return checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(n,n)})
     end
 
 
-    def inspectCellGroup(board, boardMethodCall)
-      i, numTeamsEncountered, emptySpacesEncountered, currentTeam = 0, 0, 0, 0
+    def checkReverseDiagForWin(board)
+      return checkCellGroupForWin(board, Proc.new {|n| board.spaceContents(n,(board.dimCols-1) - n)})
+    end
 
-      while i < board.dimRows
-        if boardMethodCall.call(i) != 0
-          if currentTeam == 0
-            currentTeam = boardMethodCall.call(i)
+
+    #TODO - break this method into two methods with at max 10 lines
+    def checkCellGroupForWin(board, getSpaceFromGroup)
+      numTeamsEncountered, emptySpacesEncountered, currentTeam = 0, 0, EMPTY
+
+      board.dimCols.times { |i|
+        if getSpaceFromGroup.call(i) == EMPTY
+          emptySpacesEncountered += 1
+        else
+          if currentTeam == EMPTY
+            currentTeam = getSpaceFromGroup.call(i)
             numTeamsEncountered = 1
           end
-          if currentTeam != boardMethodCall.call(i)
+          if currentTeam != getSpaceFromGroup.call(i)
             numTeamsEncountered += 1
           end
-        else
-          emptySpacesEncountered += 1
         end
+      }
 
-        i += 1
-      end
+      return analyzeCellGroupData(numTeamsEncountered, emptySpacesEncountered, currentTeam)
+    end
 
+
+    def analyzeCellGroupData(numTeamsEncountered, emptySpacesEncountered, currentTeam)
       if numTeamsEncountered == 1 && emptySpacesEncountered == 0
         return currentTeam
       end
+
       return 0
     end
   end

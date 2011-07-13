@@ -1,5 +1,7 @@
 require 'rubygems'
 require 'rspec'
+require '../constants'
+require '../lib/board'
 require '../lib/calculate'
 
 #TODO - Run through every possible game outcome instead of using random numbers

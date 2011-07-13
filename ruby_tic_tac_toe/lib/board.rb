@@ -23,11 +23,4 @@ class Board
     @board[row][col] = team
     @board
   end
-
-  def isEmpty?(row, col)
-    if @board[row][col] == 0
-      return true
-    end
-    false
-  end
 end
