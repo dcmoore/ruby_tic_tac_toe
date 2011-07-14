@@ -1,38 +1,37 @@
-require 'rubygems'
-require 'rspec'
-require '../lib/board'
+require File.dirname(__FILE__) + "/spec_helper"
+require 'board'
 
 describe Board do
   before do
     @board = Board.new(3, 3)
   end
 
-  it "makeMove(row, col, team) - updates the game board to reflect a move by the specified team" do
-    @board.makeMove(0,0,1)
-    @board.makeMove(1,1,2).should == [[1, 0, 0], [0, 2, 0], [0, 0, 0]]
+  it "make_move(row, col, team) - updates the game board to reflect a move by the specified team" do
+    @board.make_move(0,0,1)
+    @board.make_move(1,1,2).should == [[1, 0, 0], [0, 2, 0], [0, 0, 0]]
   end
 
   it "reset - clears all previous moves from the game board" do
-    @board.makeMove(0,0,2)
+    @board.make_move(0,0,2)
     @board.reset.should == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
   end
 
-  it "spaceContents(row, col) - returns the contents of the specified space" do
-    @board.makeMove(0,0,1)
-    @board.spaceContents(0,0).should == 1
+  it "space_contents(row, col) - returns the contents of the specified space" do
+    @board.make_move(0,0,1)
+    @board.space_contents(0,0).should == 1
   end
 
-  it "convertSpaceValToGraphic - graphically converts 0 to empty space, 1 to X, and 2 to O" do
-    @board.convertSpaceValToGraphic(0).should == " "
-    @board.convertSpaceValToGraphic(1).should == "X"
-    @board.convertSpaceValToGraphic(2).should == "O"
+  it "convert_space_val_to_graphic - graphically converts 0 to empty space, 1 to X, and 2 to O" do
+    @board.convert_space_val_to_graphic(0).should == " "
+    @board.convert_space_val_to_graphic(1).should == "X"
+    @board.convert_space_val_to_graphic(2).should == "O"
   end
 
-  it "dimRows - returns the number of rows in the board" do
-    @board.dimRows.should == 3
+  it "dim_rows - returns the number of rows in the board" do
+    @board.dim_rows.should == 3
   end
 
-  it "dimCols - returns the number of columns in the board" do
-    @board.dimCols.should == 3
+  it "dim_cols - returns the number of columns in the board" do
+    @board.dim_cols.should == 3
   end
 end

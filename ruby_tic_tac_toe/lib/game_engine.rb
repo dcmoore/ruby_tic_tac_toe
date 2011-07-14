@@ -1,17 +1,18 @@
 require 'board'
 require 'calculate'
 require 'player'
-require '../constants'
+require 'constants'
 
 
 class GameEngine
   def initialize()
-    @board = createBoard
-    @player1, @player2 = createPlayers
+    @board = create_board
+    @player1, @player2 = create_players
   end
 
-  def createBoard
-    puts "size of @board will be 3 rows by 3 columns"
+
+  def create_board
+    $stdout.puts "size of @board will be 3 rows by 3 columns"
     rows = 3
     cols = rows
     @board = Board.new(rows, cols)
@@ -20,11 +21,11 @@ class GameEngine
 
 
   #TODO - split into smaller methods
-  def createPlayers
-    numPlayers = getNumPlayers
+  def create_players
+    num_players = get_num_players
 
-    if numPlayers == 1
-      input = getHumanPlayersTeam
+    if num_players == 1
+      input = get_human_players_team
 
       if input == "X" || input == "x"
         p1 = Player.new("Human")
@@ -42,22 +43,22 @@ class GameEngine
   end
 
 
-  def getNumPlayers
-    numPlayers = 0
-    while numPlayers != 1 && numPlayers != 2
-      puts "Number of players. 1 or 2?"
-      numPlayers = gets.chomp.to_i
+  def get_num_players
+    num_players = 0
+    while num_players != 1 && num_players != 2
+      $stdout.puts "Number of players. 1 or 2?"
+      num_players = $stdin.gets.chomp.to_i
     end
 
-    return numPlayers
+    return num_players
   end
 
 
-  def getHumanPlayersTeam
+  def get_human_players_team
     input = ""
     while input != "X" && input != "x" && input != "O" && input != "o"
-      puts "What team do you want to be on? X or O?"
-      input = gets.chomp
+      $stdout.puts "What team do you want to be on? X or O?"
+      input = $stdin.gets.chomp
     end
 
     return input
@@ -65,67 +66,66 @@ class GameEngine
 
 
   def runGame
-    while Calculate.isGameOver?(@board) == false
-      if Calculate.currentTeam(@board) == X
-        runXsTurn
+    while Calculate.is_game_over?(@board) == false
+      if Calculate.current_team(@board) == X
+        run_xs_turn
       else
-        runOsTurn
+        run_os_turn
       end
 
-      @board.drawBoard
+      @board.draw_board
     end
   end
 
 
-  def runXsTurn
+  def run_xs_turn
     if @player1.type == "Human"
-      runHumansTurn(X)
+      run_humans_turn(X)
     else
-      runComputersTurn(X)
+      run_computers_turn(X)
     end
   end
 
 
-  def runOsTurn
+  def run_os_turn
     if @player2.type == "Human"
-      runHumansTurn(O)
+      run_humans_turn(O)
     else
-      runComputersTurn(O)
+      run_computers_turn(O)
     end
   end
 
 
-  def runComputersTurn(team)
-    puts "Please wait, computer thinking of next move..."
-    aiMove = Calculate.aiBestMove(@board)
+  def run_computers_turn(team)
+    $stdout.puts "Please wait, computer thinking of next move..."
+    aiMove = Calculate.ai_best_move(@board)
     row = aiMove[0]
     col = aiMove[1]
 
-    if @board.spaceContents(row, col) == EMPTY
-      @board.makeMove(row, col, team)
-      puts "Computer moved to space: "
-      puts row
-      puts col
+    if @board.space_contents(row, col) == EMPTY
+      @board.make_move(row, col, team)
+      $stdout.puts "Computer moved to space: " + row.to_s + col.to_s
     end
   end
 
 
-  def runHumansTurn(team)
-    move = getHumanPlayersMove
+  def run_humans_turn(team)
+    move = get_human_players_move
     row, col = move
 
-    if @board.spaceContents(row, col) == EMPTY
-      @board.makeMove(row, col, team)
-      puts "Move successfully made"
+    if @board.space_contents(row, col) == EMPTY
+      @board.make_move(row, col, team)
+      $stdout.puts "Move successfully made"
     else
-      puts "Cannot move to a space that is already full"
+      $stdout.puts "Cannot move to a space that is already full"
     end
   end
 
 
-  def getHumanPlayersMove
-    puts "type location of next move Ex. '01' for row 0 and column 1"
-    move = gets.chomp
+  #TODO - Validate user input
+  def get_human_players_move
+    $stdout.puts "type location of next move Ex. '01' for row 0 and column 1"
+    move = $stdin.gets.chomp
 
     row = move[0,1].to_i
     col = move[1,1].to_i
@@ -134,19 +134,21 @@ class GameEngine
   end
 
 
-  def gameOver
-    if Calculate.xWin?(@board) == true
-      puts "X wins!"
-    elsif Calculate.oWin?(@board) == true
-      puts "O wins!"
+  def game_over
+    if Calculate.x_win?(@board) == true
+      $stdout.puts "X wins!"
+    elsif Calculate.o_win?(@board) == true
+      $stdout.puts "O wins!"
     elsif Calculate.draw?(@board) == true
-      puts "Draw"
+      $stdout.puts "Draw"
     end
   end
 end
 
 
-#--------------------------------------------
-game1 = GameEngine.new
-game1.runGame
-game1.gameOver
+# Run the game --------------------------------------------
+if __FILE__ == $0
+  game1 = GameEngine.new
+  game1.runGame
+  game1.game_over
+end

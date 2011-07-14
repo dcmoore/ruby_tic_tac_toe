@@ -1,40 +1,44 @@
 class Board
-  attr_reader :dimRows, :dimCols
+  attr_reader :dim_rows, :dim_cols
 
   def initialize(rows, cols)
-    @dimRows = rows
-    @dimCols = cols
+    @dim_rows = rows
+    @dim_cols = cols
     @board = Array.new(rows) {Array.new(cols,0)}
   end
 
 
   def reset
-    @board = Array.new(@dimRows) {Array.new(@dimCols,0)}
+    @board = Array.new(@dim_rows) {Array.new(@dim_cols,0)}
     @board
   end
 
 
-  def spaceContents(row, col)
+  def space_contents(row, col)
     @board[row][col]
   end
 
 
-  def makeMove(row, col, team)
+  def make_move(row, col, team)
     @board[row][col] = team
     @board
   end
 
 
-  def drawBoard
-    puts convertSpaceValToGraphic(@board[0][0]) + "|" + convertSpaceValToGraphic(@board[0][1]) + "|" + convertSpaceValToGraphic(@board[0][2])
-    puts "-----"
-    puts convertSpaceValToGraphic(@board[1][0]) + "|" + convertSpaceValToGraphic(@board[1][1]) + "|" + convertSpaceValToGraphic(@board[1][2])
-    puts "-----"
-    puts convertSpaceValToGraphic(@board[2][0]) + "|" + convertSpaceValToGraphic(@board[2][1]) + "|" + convertSpaceValToGraphic(@board[2][2])
+  def draw_board
+    displayBlock = ""
+    @dim_rows.times do |row|
+      @dim_cols.times do |col|
+        displayBlock += "|" + convert_space_val_to_graphic(@board[row][col])
+      end
+      displayBlock += "|\n"
+    end
+
+    puts displayBlock
   end
 
 
-  def convertSpaceValToGraphic(team)
+  def convert_space_val_to_graphic(team)
     if team == 1
       return "X"
     elsif team == 2

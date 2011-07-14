@@ -1,6 +1,5 @@
-require 'rubygems'
-require 'rspec'
-require '../lib/player'
+require File.dirname(__FILE__) + "/spec_helper"
+require 'player'
 
 describe Player do
   it "type - returns the type of player (Human or Computer)" do
