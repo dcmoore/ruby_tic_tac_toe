@@ -1,3 +1,8 @@
+# ---WARNING---
+# This test makes a lot of computations and will
+# take a while to execute. Please be patient.
+# ---WARNING---
+
 require 'rubygems'
 require 'rspec'
 require '../constants'
@@ -11,7 +16,7 @@ describe Calculate do
     failFlag = false
     numFails = 0
     board = Board.new(3,3)
-    numGames = 5
+    numGames = 50
     while numGames != 0
       while Calculate.isGameOver?(board) == false
         if Calculate.currentTeam(board) == 1
@@ -58,7 +63,7 @@ describe Calculate do
     failFlag = false
     numFails = 0
     board = Board.new(3,3)
-    numGames = 5
+    numGames = 50
     while numGames != 0
       while Calculate.isGameOver?(board) == false
         if Calculate.currentTeam(board) == 1

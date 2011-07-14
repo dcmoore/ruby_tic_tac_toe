@@ -22,6 +22,12 @@ describe Board do
     @board.spaceContents(0,0).should == 1
   end
 
+  it "convertSpaceValToGraphic - graphically converts 0 to empty space, 1 to X, and 2 to O" do
+    @board.convertSpaceValToGraphic(0).should == " "
+    @board.convertSpaceValToGraphic(1).should == "X"
+    @board.convertSpaceValToGraphic(2).should == "O"
+  end
+
   it "dimRows - returns the number of rows in the board" do
     @board.dimRows.should == 3
   end

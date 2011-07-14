@@ -26,10 +26,21 @@ class Board
 
 
   def drawBoard
-    puts @board[0][0].to_s + "|" + @board[0][1].to_s + "|" + @board[0][2].to_s
-    puts "------"
-    puts @board[1][0].to_s + "|" + @board[1][1].to_s + "|" + @board[1][2].to_s
-    puts "------"
-    puts @board[2][0].to_s + "|" + @board[2][1].to_s + "|" + @board[2][2].to_s
+    puts convertSpaceValToGraphic(@board[0][0]) + "|" + convertSpaceValToGraphic(@board[0][1]) + "|" + convertSpaceValToGraphic(@board[0][2])
+    puts "-----"
+    puts convertSpaceValToGraphic(@board[1][0]) + "|" + convertSpaceValToGraphic(@board[1][1]) + "|" + convertSpaceValToGraphic(@board[1][2])
+    puts "-----"
+    puts convertSpaceValToGraphic(@board[2][0]) + "|" + convertSpaceValToGraphic(@board[2][1]) + "|" + convertSpaceValToGraphic(@board[2][2])
+  end
+
+
+  def convertSpaceValToGraphic(team)
+    if team == 1
+      return "X"
+    elsif team == 2
+      return "O"
+    else
+      return " "
+    end
   end
 end

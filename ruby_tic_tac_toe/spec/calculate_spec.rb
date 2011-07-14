@@ -55,6 +55,8 @@ describe Calculate do
     @board.makeMove(1,1,X)
     @board.makeMove(1,2,O)
     @board.makeMove(2,0,X)
+    @board.makeMove(2,1,O)
+    @board.makeMove(2,2,X)
     Calculate.draw?(@board).should == false  # Because X has 3 in a row
   end
 
@@ -77,6 +79,9 @@ describe Calculate do
   end
 
   it "self.aiBestMove(Board) - returns an array containing the row and column of the best possible next move" do
+    # Testing for 1st move
+    Calculate.aiBestMove(@board).should == [1,1]
+
     setupXWinOnRow
     Calculate.aiBestMove(@board).should == [0,2]
     @board.reset
@@ -97,18 +102,19 @@ describe Calculate do
     Calculate.aiBestMove(@board).should == [2,2]
     @board.reset
 
-    Calculate.aiBestMove(@board).should == [1,1]  # Testing for 1st move
+    setupKiddieCornerTrap
+    Calculate.aiBestMove(@board).should_not == [0,2]
+    Calculate.aiBestMove(@board).should_not == [2,0]
+    @board.reset
 
-#    setupKiddieCornerTrap
-#    Calculate.aiBestMove(@board).should == [1,1]
-#    setupDoubleSideTrap
-#    Calculate.aiBestMove(@board).should == [1,1]
-#    setupCornerTrap
-#    Calculate.aiBestMove(@board).should == [1,1]
-#    setupOddTrap
-#    Calculate.aiBestMove(@board).should == [1,1]
-#    setupChoosingBestEmptyWinner
-#    Calculate.aiBestMove(@board).should == [1,1]
+    setupTriangleTrap
+    Calculate.aiBestMove(@board).should_not == [0,1]
+    Calculate.aiBestMove(@board).should_not == [1,0]
+    Calculate.aiBestMove(@board).should_not == [2,1]
+    Calculate.aiBestMove(@board).should_not == [1,2]
+
+    setupCornerTrap
+    Calculate.aiBestMove(@board).should == [0,2]
   end
 
   def setupXWinOnRow
@@ -143,17 +149,20 @@ describe Calculate do
   end
 
   def setupKiddieCornerTrap
+    @board.makeMove(0,0,X)
+    @board.makeMove(1,1,O)
+    @board.makeMove(2,2,X)
   end
 
-  def setupDoubleSideTrap
+  def setupTriangleTrap
+    @board.makeMove(1,1,X)
+    @board.makeMove(0,0,O)
+    @board.makeMove(2,2,X)
   end
 
   def setupCornerTrap
-  end
-
-  def setupOddTrap
-  end
-
-  def setupChoosingBestEmptyWinner
+    @board.makeMove(0,1,O)
+    @board.makeMove(1,2,O)
+    @board.makeMove(1,1,X)
   end
 end

@@ -89,6 +89,7 @@ class Calculate
     end
 
 
+    #TODO - split into smaller methods
     def findBestEmptyWinner(board, team)
       boardCopy = cloneBoard(board)
       emptyWinners = getEmptyWinnersArray(boardCopy)
@@ -125,6 +126,7 @@ class Calculate
     end
 
 
+    #TODO - split into smaller methods
     def getEmptyWinnersArray(board)
       emptyWinners = []
 
@@ -231,6 +233,21 @@ class Calculate
 
 
     def trapsThatTheAlgorithmDoesntPickUp(board)
+      returnValue1 = cornerTrap(board)
+      returnValue2 = triangleTrap(board)
+
+      if returnValue1 != -1
+        return returnValue1
+      elsif returnValue2 != -1
+        return returnValue2
+      end
+
+      return -1
+    end
+
+
+    #TODO - split into smaller methods
+    def cornerTrap(board)
       if (board.spaceContents(1,2) == X && board.spaceContents(2,1) == X && board.spaceContents(2,2) == EMPTY) || (board.spaceContents(1,2) == O && board.spaceContents(2,1) == O && board.spaceContents(2,2) == EMPTY)
         return [2,2]
       end
@@ -247,12 +264,24 @@ class Calculate
         return [0,2]
       end
 
-      if board.spaceContents(1,1) == X && Calculate.numMovesMade(board) == 1  # To optimize speed
-        return [0,0]
-      end
+      return -1
     end
 
 
+    def triangleTrap(board)
+      if Calculate.numMovesMade(board) == 3 && (board.spaceContents(1,1) == X && board.spaceContents(0,0) == X && board.spaceContents(2,2) == O) || (board.spaceContents(1,1) == X && board.spaceContents(0,0) == O && board.spaceContents(2,2) == X)
+        return [0,2]
+      end
+
+      if Calculate.numMovesMade(board) == 3 && (board.spaceContents(1,1) == X && board.spaceContents(0,2) == X && board.spaceContents(2,0) == O) || (board.spaceContents(1,1) == X && board.spaceContents(0,2) == O && board.spaceContents(2,0) == X)
+        return [2,2]
+      end
+
+      return -1
+    end
+
+
+    #TODO - split into smaller methods
     def createWLDArray(board, aiTeam, curTeam, depth)
       wld = Array.new(board.dimRows) {Array.new(board.dimRows) {Array.new(3,EMPTY)}}
 
@@ -261,20 +290,15 @@ class Calculate
         board.dimCols.times { |col|
           # Is this an empty space?
           if board.spaceContents(row, col) == 0
-#puts "Moved: " + row.to_s + " " + col.to_s + " " + Calculate.currentTeam(board).to_s + " depth: " + depth.to_s
             board.makeMove(row, col, currentTeam(board))  # Make a hypothetical move
-#board.drawBoard
-#puts
 
             if Calculate.isGameOver?(board) == true
-#puts "game over. depth: " + depth.to_s
               wld = updateWLD(row, col, aiTeam, board, wld)
               board.makeMove(row, col, 0)  # Take back hypothetical move
               next
             end
 
             tempArray = createWLDArray(board, aiTeam, currentTeam(board), depth+1)  # Recursively call aiBestMove at 1 more level of depth
-#puts "end recursive call. depth: " + depth.to_s
             wld = addRecursedWLDVals(tempArray, wld, board)  # Add return value (array) of recursive call to wld array
             board.makeMove(row, col, 0)  # Take back hypothetical move
           end
@@ -285,6 +309,7 @@ class Calculate
     end
 
 
+    #TODO - split into smaller methods
     def updateWLD(row, col, aiTeam, board, wld)
       if Calculate.oWin?(board) == true
         if aiTeam == O
@@ -343,17 +368,14 @@ class Calculate
     end
 
 
+    #TODO - split into smaller methods
     def calculateBestMove(board, wld)
       bestMove = [0, 0]
       board.dimRows.times { |row|
         board.dimCols.times { |col|
-          wld[row][col][0] += 1
-          wld[row][col][1] += 1
-          wld[row][col][2] += 1
-          if wld[row][col] != [1,1,1]  # Ensures that the spaces being evaluated are empty
-            if bestMove == [0,0]
-              bestMove = [row,col]  # Makes sure that best move by default equals an empty space on the board
-            end
+          wld = addOneSoYouDontDivideByZero(wld, row, col)
+          if wld[row][col] != [1,1,1]  # Ensures that the spaces being evaluated are empty spaces on the board
+            bestMove = setADefaultValueIfItHasntAlreadyBeenSet(bestMove, row, col)
 
             tempScore = ((2*wld[row][col][0]) + wld[row][col][2]) / (3*wld[row][col][1])
             if tempScore > ((2*wld[bestMove[0]][bestMove[1]][0]) + wld[bestMove[0]][bestMove[1]][2]) / (3*wld[bestMove[0]][bestMove[1]][1])
@@ -362,6 +384,24 @@ class Calculate
           end
         }
       }
+
+      return bestMove
+    end
+
+
+    def addOneSoYouDontDivideByZero(wld, row, col)
+      wld[row][col][0] += 1
+      wld[row][col][1] += 1
+      wld[row][col][2] += 1
+
+      return wld
+    end
+
+
+    def setADefaultValueIfItHasntAlreadyBeenSet(bestMove, row, col)
+      if bestMove == [0,0]
+        bestMove = [row,col]  # Makes sure that best move by default equals an empty space on the board
+      end
 
       return bestMove
     end
@@ -426,7 +466,7 @@ class Calculate
     end
 
 
-    #TODO - break this method into two methods with at max 10 lines
+    #TODO - split into smaller methods
     def checkCellGroup(board, getSpaceFromGroup)
       numTeamsEncountered, emptySpacesEncountered, emptySpaceLocation, currentTeam = 0, 0, 0, EMPTY
 

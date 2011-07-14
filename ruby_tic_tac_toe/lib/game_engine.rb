@@ -1,9 +1,3 @@
-#X|O|X
-#-----
-#O|X|O
-#-----
-#X|O|X
-
 require 'board'
 require 'calculate'
 require 'player'
@@ -25,6 +19,7 @@ class GameEngine
   end
 
 
+  #TODO - split into smaller methods
   def createPlayers
     numPlayers = getNumPlayers
 
