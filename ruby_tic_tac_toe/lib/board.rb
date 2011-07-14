@@ -1,3 +1,5 @@
+require 'space'
+
 class Board
   attr_reader :dim_rows, :dim_cols
 
@@ -46,5 +48,12 @@ class Board
     else
       return " "
     end
+  end
+
+
+  private
+
+  def initialize_spaces
+    #TODO
   end
 end

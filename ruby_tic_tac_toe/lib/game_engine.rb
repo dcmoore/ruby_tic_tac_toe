@@ -7,7 +7,7 @@ require 'constants'
 class GameEngine
   def initialize()
     @board = create_board
-    @player1, @player2 = create_players
+    create_players
   end
 
 
@@ -20,26 +20,31 @@ class GameEngine
   end
 
 
-  #TODO - split into smaller methods
   def create_players
     num_players = get_num_players
 
     if num_players == 1
-      input = get_human_players_team
-
-      if input == "X" || input == "x"
-        p1 = Player.new("Human")
-        p2 = Player.new("Computer")
-      else
-        p1 = Player.new("Computer")
-        p2 = Player.new("Human")
-      end
+      initialize_with_one_player
     else
-      p1 = Player.new("Human")
-      p2 = Player.new("Human")
+      player_factory("Human", "Human")
     end
+  end
 
-    return [p1, p2]
+
+  def initialize_with_one_player
+    input = get_human_players_team
+
+    if input == "X" || input == "x"
+      player_factory("Human", "Computer")
+    else
+      player_factory("Computer", "Human")
+    end
+  end
+
+
+  def player_factory(p1, p2)
+    @player1 = Player.new(p1)
+    @player2 = Player.new(p2)
   end
 
 
@@ -122,15 +127,20 @@ class GameEngine
   end
 
 
-  #TODO - Validate user input
   def get_human_players_move
     $stdout.puts "type location of next move Ex. '01' for row 0 and column 1"
     move = $stdin.gets.chomp
+    move = validate_move(move)
 
     row = move[0,1].to_i
     col = move[1,1].to_i
 
     return [row, col]
+  end
+
+
+  def validate_move(move)
+    #TODO
   end
 
 

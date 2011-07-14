@@ -135,6 +135,7 @@ class Calculate
     end
 
 
+    #TODO - combine with other check_for_empty_win methods
     def check_all_rows_for_empty_winner(board)
       empty_winners = []
       board.dim_rows.times do |row|
@@ -148,6 +149,7 @@ class Calculate
     end
 
 
+    #TODO - combine with other check_for_empty_win methods
     def check_all_cols_for_empty_winner(board)
       empty_winners = []
       board.dim_rows.times do |col|
@@ -161,6 +163,7 @@ class Calculate
     end
 
 
+    #TODO - combine with other check_for_empty_win methods
     def check_forward_diag_for_empty_winner(board)
       empty_winners = []
 
@@ -173,6 +176,7 @@ class Calculate
     end
 
 
+    #TODO - combine with other check_for_empty_win methods
     def check_reverse_diag_for_empty_winner(board)
       empty_winners = []
 
@@ -214,8 +218,7 @@ class Calculate
 
 
     def traps_that_the_algorithm_doesnt_pick_up(board)
-      return_value1 = corner_trap(board)
-      return_value2 = triangle_trap(board)
+      return_value1, return_value2 = corner_trap(board), triangle_trap(board)
 
       if return_value1 != -1
         return return_value1
@@ -227,22 +230,39 @@ class Calculate
     end
 
 
-    #TODO - split into smaller methods
     def corner_trap(board)
-      if (board.space_contents(1,2) == X && board.space_contents(2,1) == X && board.space_contents(2,2) == EMPTY) || (board.space_contents(1,2) == O && board.space_contents(2,1) == O && board.space_contents(2,2) == EMPTY)
-        return [2,2]
+      return_value1, return_value2 = top_corners(board), bottom_corners(board)
+
+      if return_value1 != -1
+        return return_value1
+      elsif return_value2 != -1
+        return return_value2
       end
 
+      return -1
+    end
+
+
+    def top_corners(board)
       if (board.space_contents(0,1) == X && board.space_contents(1,0) == X && board.space_contents(0,0) == EMPTY) || (board.space_contents(0,1) == O && board.space_contents(1,0) == O && board.space_contents(0,0) == EMPTY)
         return [0,0]
       end
 
+      if (board.space_contents(0,1) == X && board.space_contents(1,2) == X && board.space_contents(0,2) == EMPTY) || (board.space_contents(0,1) == O && board.space_contents(1,2) == O && board.space_contents(0,2) == EMPTY)
+        return [0,2]
+      end
+
+      return -1
+    end
+
+
+    def bottom_corners(board)
       if (board.space_contents(1,0) == X && board.space_contents(2,1) == X && board.space_contents(2,0) == EMPTY) || (board.space_contents(1,0) == O && board.space_contents(2,1) == O && board.space_contents(2,0) == EMPTY)
         return [2,0]
       end
 
-      if (board.space_contents(0,1) == X && board.space_contents(1,2) == X && board.space_contents(0,2) == EMPTY) || (board.space_contents(0,1) == O && board.space_contents(1,2) == O && board.space_contents(0,2) == EMPTY)
-        return [0,2]
+      if (board.space_contents(1,2) == X && board.space_contents(2,1) == X && board.space_contents(2,2) == EMPTY) || (board.space_contents(1,2) == O && board.space_contents(2,1) == O && board.space_contents(2,2) == EMPTY)
+        return [2,2]
       end
 
       return -1
@@ -266,11 +286,9 @@ class Calculate
     def create_wld_array(board, ai_team, curTeam, depth)
       wld = Array.new(board.dim_rows) {Array.new(board.dim_rows) {Array.new(3,EMPTY)}}
 
-      # Loop through empty spaces to fill the wld array out
-      board.dim_rows.times do |row|
+      board.dim_rows.times do |row|  # Loop through empty spaces to fill the wld array out
         board.dim_cols.times do |col|
-          # Is this an empty space?
-          if board.space_contents(row, col) == 0
+          if board.space_contents(row, col) == 0  # Is this an empty space?
             board.make_move(row, col, current_team(board))  # Make a hypothetical move
 
             if is_game_over?(board) == true
@@ -369,7 +387,6 @@ class Calculate
     end
 
 
-    #TODO - split into smaller methods
     def calculate_best_move(board, wld)
       best_move = [0, 0]
       board.dim_rows.times do |row|
@@ -427,12 +444,14 @@ class Calculate
     end
 
 
+    #TODO - combine with other check_for_win methods
     def check_all_rows_for_win(board)
       board.dim_rows.times do |row|
         group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(row,n)})
 
-        if group_of_cells[0] == "win"
-          return group_of_cells[1]
+        return_value = return_value_of_check_for_win_method(group_of_cells)
+        if return_value != 0
+          return return_value
         end
       end
 
@@ -440,12 +459,14 @@ class Calculate
     end
 
 
+    #TODO - combine with other check_for_win methods
     def check_all_cols_for_win(board)
       board.dim_cols.times do |col|
         group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,col)})
 
-        if group_of_cells[0] == "win"
-          return group_of_cells[1]
+        return_value = return_value_of_check_for_win_method(group_of_cells)
+        if return_value != 0
+          return return_value
         end
       end
 
@@ -453,19 +474,21 @@ class Calculate
     end
 
 
+    #TODO - combine with other check_for_win methods
     def check_forward_diag_for_win(board)
       group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,n)})
-
-      if group_of_cells[0] == "win"
-        return group_of_cells[1]
-      end
-      return 0
+      return return_value_of_check_for_win_method(group_of_cells)
     end
 
 
+    #TODO - combine with other check_for_win methods
     def check_reverse_diag_for_win(board)
       group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,(board.dim_cols-1) - n)})
+      return return_value_of_check_for_win_method(group_of_cells)
+    end
 
+
+    def return_value_of_check_for_win_method(group_of_cells)
       if group_of_cells[0] == "win"
         return group_of_cells[1]
       end
