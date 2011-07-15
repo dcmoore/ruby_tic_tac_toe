@@ -282,29 +282,35 @@ class Calculate
     end
 
 
-    #TODO - split into smaller methods
-    def create_wld_array(board, ai_team, curTeam, depth)
+    def create_wld_array(board, ai_team, cur_team, depth)
       wld = Array.new(board.dim_rows) {Array.new(board.dim_rows) {Array.new(3,EMPTY)}}
 
       board.dim_rows.times do |row|  # Loop through empty spaces to fill the wld array out
         board.dim_cols.times do |col|
           if board.space_contents(row, col) == 0  # Is this an empty space?
-            board.make_move(row, col, current_team(board))  # Make a hypothetical move
-
-            if is_game_over?(board) == true
-              wld = update_wld(row, col, ai_team, board, wld)
-              board.make_move(row, col, 0)  # Take back hypothetical move
-              next
-            end
-
-            temp_array = create_wld_array(board, ai_team, current_team(board), depth+1)  # Recursively call ai_best_move at 1 more level of depth
-            wld = add_recursed_wld_vals(temp_array, wld, board)  # Add return value (array) of recursive call to wld array
-            board.make_move(row, col, 0)  # Take back hypothetical move
+            wld, board = fill_out_wld_array(wld, board, row, col, ai_team, cur_team, depth)
           end
         end
       end
 
       return wld  # If the loop is over, return this depth's completed wld array
+    end
+
+
+    def fill_out_wld_array(wld, board, row, col, ai_team, cur_team, depth)
+      board.make_move(row, col, current_team(board))  # Make a hypothetical move
+
+      if is_game_over?(board) == true
+        wld = update_wld(row, col, ai_team, board, wld)
+        board.make_move(row, col, 0)  # Take back hypothetical move
+        return [wld, board]
+      end
+
+      temp_array = create_wld_array(board, ai_team, current_team(board), depth+1)  # Recursively call ai_best_move at 1 more level of depth
+      wld = add_recursed_wld_vals(temp_array, wld, board)  # Add return value (array) of recursive call to wld array
+      board.make_move(row, col, 0)  # Take back hypothetical move
+
+      return [wld, board]
     end
 
 
