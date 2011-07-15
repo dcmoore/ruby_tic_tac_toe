@@ -140,7 +140,13 @@ class GameEngine
 
 
   def validate_move(move)
-    #TODO
+    while !(move[0,1].to_i < @board.dim_rows && move[1,1].to_i < @board.dim_cols)
+      $stdout.puts "Invalid Move"
+      $stdout.puts "type location of next move Ex. '01' for row 0 and column 1"
+      move = $stdin.gets.chomp
+    end
+
+    return move
   end
 
 
