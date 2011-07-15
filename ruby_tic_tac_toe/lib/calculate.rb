@@ -189,6 +189,32 @@ class Calculate
     end
 
 
+    #TODO - work in progress
+    def check_board_for_empty_winnners(board)
+      group_of_cells = []
+
+      board.dim_rows.times do |i|
+        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(i,n)}))
+        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,i)}))
+      end
+      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,n)}))
+      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,(board.dim_cols-1) - n)}))
+
+      return return_value_of_check_for_empty_winner_method(group_of_cells)
+    end
+
+
+    #TODO - work in progress
+    def return_value_of_check_for_empty_winner_method(group_of_cells)
+      group_of_cells.length.times do |i|
+        if group_of_cells[i][0] == "empty_winner"
+          return group_of_cells[i][1]
+        end
+      end
+      return 0
+    end
+
+
     def hard_coded_moves(board)
       optimized_move = optimize_the_algorithm(board)
       if optimized_move != -1
@@ -454,11 +480,11 @@ class Calculate
       group_of_cells = []
 
       board.dim_rows.times do |i|
-        group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(i,n)}))
-        group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(n,i)}))
+        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(i,n)}))
+        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,i)}))
       end
-      group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(n,n)}))
-      group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(n,(board.dim_cols-1) - n)}))
+      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,n)}))
+      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,(board.dim_cols-1) - n)}))
 
       return return_value_of_check_for_win_method(group_of_cells)
     end
@@ -475,19 +501,20 @@ class Calculate
 
 
     #TODO - split into smaller methods
-    def check_cell_group(board, get_space_from_group)
+    def check_cell_group(board, prc)
       num_teams_encountered, empty_spaces_encountered, empty_space_location, current_team = 0, 0, 0, EMPTY
 
       board.dim_cols.times do |i|
-        if get_space_from_group.call(i) == EMPTY
+        current_space_in_group = prc.call(i)
+        if current_space_in_group == EMPTY
           empty_space_location = i
           empty_spaces_encountered += 1
         else
           if current_team == EMPTY
-            current_team = get_space_from_group.call(i)
+            current_team = current_space_in_group
             num_teams_encountered = 1
           end
-          if current_team != get_space_from_group.call(i)
+          if current_team != current_space_in_group
             num_teams_encountered += 1
           end
         end
