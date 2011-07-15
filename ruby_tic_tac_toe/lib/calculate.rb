@@ -19,7 +19,7 @@ class Calculate
 
 
     def x_win?(board)
-      if check_all_cols_for_win(board) == X || check_all_rows_for_win(board) == X || check_forward_diag_for_win(board) == X || check_reverse_diag_for_win(board) == X
+      if check_board_for_win(board) == X
         return true
       end
       return false
@@ -27,7 +27,7 @@ class Calculate
 
 
     def o_win?(board)
-      if check_all_cols_for_win(board) == O || check_all_rows_for_win(board) == O || check_forward_diag_for_win(board) == O || check_reverse_diag_for_win(board) == O
+      if check_board_for_win(board) == O
         return true
       end
       return false
@@ -450,53 +450,25 @@ class Calculate
     end
 
 
-    #TODO - combine with other check_for_win methods
-    def check_all_rows_for_win(board)
-      board.dim_rows.times do |row|
-        group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(row,n)})
+    def check_board_for_win(board)
+      group_of_cells = []
 
-        return_value = return_value_of_check_for_win_method(group_of_cells)
-        if return_value != 0
-          return return_value
-        end
+      board.dim_rows.times do |i|
+        group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(i,n)}))
+        group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(n,i)}))
       end
+      group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(n,n)}))
+      group_of_cells.push(check_cell_group(board, Proc.new {|n| board.space_contents(n,(board.dim_cols-1) - n)}))
 
-      return 0
-    end
-
-
-    #TODO - combine with other check_for_win methods
-    def check_all_cols_for_win(board)
-      board.dim_cols.times do |col|
-        group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,col)})
-
-        return_value = return_value_of_check_for_win_method(group_of_cells)
-        if return_value != 0
-          return return_value
-        end
-      end
-
-      return 0
-    end
-
-
-    #TODO - combine with other check_for_win methods
-    def check_forward_diag_for_win(board)
-      group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,n)})
-      return return_value_of_check_for_win_method(group_of_cells)
-    end
-
-
-    #TODO - combine with other check_for_win methods
-    def check_reverse_diag_for_win(board)
-      group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,(board.dim_cols-1) - n)})
       return return_value_of_check_for_win_method(group_of_cells)
     end
 
 
     def return_value_of_check_for_win_method(group_of_cells)
-      if group_of_cells[0] == "win"
-        return group_of_cells[1]
+      group_of_cells.length.times do |i|
+        if group_of_cells[i][0] == "win"
+          return group_of_cells[i][1]
+        end
       end
       return 0
     end
