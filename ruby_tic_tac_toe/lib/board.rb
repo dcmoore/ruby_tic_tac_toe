@@ -6,20 +6,16 @@ class Board
   def initialize(rows, cols)
     @dim_rows = rows
     @dim_cols = cols
-#    @board = Array.new(rows) {Array.new(cols,0)}
     initialize_spaces
   end
 
 
   def reset
-#    @board = Array.new(@dim_rows) {Array.new(@dim_cols,0)}
-#    @board
     initialize_spaces
   end
 
 
   def space_contents(row, col)
-#    @board[row][col]
     @spaces.each do |space|
       if space.row == row && space.col == col
         return space.val
@@ -29,8 +25,6 @@ class Board
 
 
   def make_move(row, col, team)
-#    @board[row][col] = team
-#    @board
     @spaces.each do |space|
       if space.row == row && space.col == col
         space.val = team
@@ -41,11 +35,12 @@ class Board
 
   def draw_board
     displayBlock = ""
-    @dim_rows.times do |row|
-      @dim_cols.times do |col|
-        displayBlock += "|" + convert_space_val_to_graphic(space_contents(row, col))
+
+    @spaces.each do |space|
+      displayBlock += "|" + convert_space_val_to_graphic(space_contents(space.row, space.col))
+      if space.col == (@dim_cols - 1)
+        displayBlock += "|\n"
       end
-      displayBlock += "|\n"
     end
 
     puts displayBlock

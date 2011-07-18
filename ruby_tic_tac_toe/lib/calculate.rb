@@ -198,11 +198,9 @@ class Calculate
     def create_wld_array(board, ai_team, cur_team, depth)
       wld = Array.new(board.dim_rows) {Array.new(board.dim_rows) {Array.new(3,EMPTY)}}
 
-      board.dim_rows.times do |row|  # Loop through empty spaces to fill the wld array out
-        board.dim_cols.times do |col|
-          if board.space_contents(row, col) == 0  # Is this an empty space?
-            wld, board = fill_out_wld_array(wld, board, row, col, ai_team, cur_team, depth)
-          end
+      board.spaces.each do |space|
+        if board.space_contents(space.row, space.col) == 0  # Is this an empty space?
+          wld, board = fill_out_wld_array(wld, board, space.row, space.col, ai_team, cur_team, depth)
         end
       end
 
