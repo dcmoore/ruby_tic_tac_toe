@@ -51,6 +51,42 @@ class Board
   end
 
 
+  def clone_board
+    board_copy = Board.new(@dim_rows, @dim_cols)
+    @dim_rows.times do |row|
+      @dim_cols.times do |col|
+        board_copy.make_move(row, col, space_contents(row, col))
+      end
+    end
+
+    return board_copy
+  end
+
+
+  def num_moves_made
+    count = 0
+
+    @dim_rows.times do |row|
+      @dim_cols.times do |col|
+        if space_contents(row,col) != EMPTY
+          count += 1
+        end
+      end
+    end
+
+    return count
+  end
+
+
+  def is_board_full?
+    if num_moves_made == (@dim_rows * @dim_cols)
+      return true
+    end
+
+    return false
+  end
+
+
   private
 
   def initialize_spaces

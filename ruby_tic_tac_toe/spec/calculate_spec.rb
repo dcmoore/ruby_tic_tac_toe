@@ -35,12 +35,6 @@ describe Calculate do
     @board.reset
   end
 
-  it "self.num_moves_made(Board) - returns the number of moves that have been made on the board" do
-    setup_x_win_choose_best_empty_winner
-    Calculate.num_moves_made(@board).should == 4
-    @board.reset
-  end
-
   it "self.current_team(Board) - returns the team who is next in line to make a move" do
     setup_x_win_choose_best_empty_winner
     Calculate.current_team(@board).should == X

@@ -15,33 +15,20 @@ class Calculate
       if win?(board, X) == true || win?(board, O) == true
         return false
       end
-      return is_board_full?(board)
+      return board.is_board_full?
     end
 
-   def win?(board, mark)
+
+    def win?(board, mark)
       if check_board_for_win(board) == mark 
         return true
       end
       return false
-   end
-
-    def num_moves_made(board)
-      count = 0
-
-      board.dim_rows.times do |row|
-        board.dim_cols.times do |col|
-          if board.space_contents(row,col) != EMPTY
-            count += 1
-          end
-        end
-      end
-
-      return count
     end
 
 
     def current_team(board)
-      current_turn = num_moves_made(board)
+      current_turn = board.num_moves_made
       if current_turn % 2 == 0
         return X
       else
@@ -81,7 +68,7 @@ class Calculate
 
 
     def find_best_empty_winner(board, team)
-      board_copy = clone_board(board)
+      board_copy = board.clone_board
       empty_winners = get_empty_winners_array(board_copy)
 
       winner = find_first_winning_empty_winner(empty_winners, board_copy, team)
@@ -91,18 +78,6 @@ class Calculate
         return empty_winners[0]
       end
       return -1
-    end
-
-
-    def clone_board(board)
-      board_copy = Board.new(board.dim_rows, board.dim_cols)
-      board.dim_rows.times do |row|
-        board.dim_cols.times do |col|
-          board_copy.make_move(row, col, board.space_contents(row, col))
-        end
-      end
-
-      return board_copy
     end
 
 
@@ -165,7 +140,7 @@ class Calculate
 
 
     def optimize_the_algorithm(board)
-      if board.space_contents(1,1) == X && num_moves_made(board) == 1
+      if board.space_contents(1,1) == X && board.num_moves_made == 1
         return [0,0]
       end
 
@@ -207,38 +182,12 @@ class Calculate
     end
 
 
-    def top_corners(board)
-      if (board.space_contents(0,1) == X && board.space_contents(1,0) == X && board.space_contents(0,0) == EMPTY) || (board.space_contents(0,1) == O && board.space_contents(1,0) == O && board.space_contents(0,0) == EMPTY)
-        return [0,0]
-      end
-
-      if (board.space_contents(0,1) == X && board.space_contents(1,2) == X && board.space_contents(0,2) == EMPTY) || (board.space_contents(0,1) == O && board.space_contents(1,2) == O && board.space_contents(0,2) == EMPTY)
-        return [0,2]
-      end
-
-      return -1
-    end
-
-
-    def bottom_corners(board)
-      if (board.space_contents(1,0) == X && board.space_contents(2,1) == X && board.space_contents(2,0) == EMPTY) || (board.space_contents(1,0) == O && board.space_contents(2,1) == O && board.space_contents(2,0) == EMPTY)
-        return [2,0]
-      end
-
-      if (board.space_contents(1,2) == X && board.space_contents(2,1) == X && board.space_contents(2,2) == EMPTY) || (board.space_contents(1,2) == O && board.space_contents(2,1) == O && board.space_contents(2,2) == EMPTY)
-        return [2,2]
-      end
-
-      return -1
-    end
-
-
     def triangle_trap(board)
-      if num_moves_made(board) == 3 && (board.space_contents(1,1) == X && board.space_contents(0,0) == X && board.space_contents(2,2) == O) || (board.space_contents(1,1) == X && board.space_contents(0,0) == O && board.space_contents(2,2) == X)
+      if board.num_moves_made == 3 && (board.space_contents(1,1) == X && board.space_contents(0,0) == X && board.space_contents(2,2) == O) || (board.space_contents(1,1) == X && board.space_contents(0,0) == O && board.space_contents(2,2) == X)
         return [0,2]
       end
 
-      if num_moves_made(board) == 3 && (board.space_contents(1,1) == X && board.space_contents(0,2) == X && board.space_contents(2,0) == O) || (board.space_contents(1,1) == X && board.space_contents(0,2) == O && board.space_contents(2,0) == X)
+      if board.num_moves_made == 3 && (board.space_contents(1,1) == X && board.space_contents(0,2) == X && board.space_contents(2,0) == O) || (board.space_contents(1,1) == X && board.space_contents(0,2) == O && board.space_contents(2,0) == X)
         return [2,2]
       end
 
@@ -399,19 +348,6 @@ class Calculate
       end
 
       return best_move
-    end
-
-
-    def is_board_full?(board)
-      board.dim_rows.times do |row|
-        board.dim_cols.times do |col|
-          if board.space_contents(col, row) == EMPTY
-            return false
-          end
-        end
-      end
-
-      return true
     end
 
 
