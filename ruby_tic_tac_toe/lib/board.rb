@@ -60,10 +60,9 @@ class Board
 
   def clone_board
     board_copy = Board.new(@dim_rows, @dim_cols)
-    @dim_rows.times do |row|
-      @dim_cols.times do |col|
-        board_copy.make_move(row, col, space_contents(row, col))
-      end
+
+    @spaces.each do |space|
+        board_copy.make_move(space.row, space.col, space_contents(space.row, space.col))
     end
 
     return board_copy
@@ -73,11 +72,9 @@ class Board
   def num_moves_made
     count = 0
 
-    @dim_rows.times do |row|
-      @dim_cols.times do |col|
-        if space_contents(row,col) != EMPTY
-          count += 1
-        end
+    @spaces.each do |space|
+      if space_contents(space.row, space.col) != EMPTY
+        count += 1
       end
     end
 
