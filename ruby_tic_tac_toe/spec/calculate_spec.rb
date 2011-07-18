@@ -15,13 +15,13 @@ describe Calculate do
 
   it "self.x_win?(Board) - returns true if team X has 3 consecutive spaces in a row" do
     setup_x_win_on_full_board
-    Calculate.x_win?(@board).should == true
+    Calculate.win?(@board, X).should == true
     @board.reset
   end
 
   it "self.o_win?(Board) - returns true if team O has 3 consecutive spaces in a row" do
     setup_o_win_in_three_moves
-    Calculate.o_win?(@board).should == true
+    Calculate.win?(@board, O).should == true
     @board.reset
   end
 
