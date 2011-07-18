@@ -1,4 +1,5 @@
 require 'constants'
+require 'space'
 
 class Calculate
   class << self
@@ -88,18 +89,6 @@ class Calculate
       return -1
     end
 
-    def find_first_winning_empty_winner(empty_winners, board, team)
-      empty_winners.length.times do |i|
-        board.make_move(empty_winners[i][0], empty_winners[i][1], team)
-        if team == X
-          return empty_winners[i] if x_win?(board) == true
-        else
-          return empty_winners[i] if o_win?(board) == true
-        end
-      end
-      return nil
-    end
-
 
     def find_best_empty_winner(board, team)
       board_copy = clone_board(board)
@@ -112,6 +101,20 @@ class Calculate
         return empty_winners[0]
       end
       return -1
+    end
+
+
+    def find_first_winning_empty_winner(empty_winners, board, team)
+      empty_winners.length.times do |i|
+        board.make_move(empty_winners[i][0], empty_winners[i][1], team)
+        if team == X
+          return empty_winners[i] if x_win?(board) == true
+        else
+          return empty_winners[i] if o_win?(board) == true
+        end
+        board.make_move(empty_winners[i][0], empty_winners[i][1], 0)
+      end
+      return nil
     end
 
 
@@ -128,90 +131,31 @@ class Calculate
 
 
     def get_empty_winners_array(board)
-      return check_all_rows_for_empty_winner(board) +
-	check_all_cols_for_empty_winner(board) +
-	check_forward_diag_for_empty_winner(board) +
-	check_reverse_diag_for_empty_winner(board)
-    end
-
-
-    #TODO - combine with other check_for_empty_win methods
-    def check_all_rows_for_empty_winner(board)
-      empty_winners = []
-      board.dim_rows.times do |row|
-        group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(row,n)})
-        if group_of_cells[0] == "empty_winner"
-          empty_winners.push([row,group_of_cells[1]])
-        end
-      end
-
-      return empty_winners
-    end
-
-
-    #TODO - combine with other check_for_empty_win methods
-    def check_all_cols_for_empty_winner(board)
-      empty_winners = []
-      board.dim_rows.times do |col|
-        group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,col)})
-        if group_of_cells[0] == "empty_winner"
-          empty_winners.push([group_of_cells[1],col])
-        end
-      end
-
-      return empty_winners
-    end
-
-
-    #TODO - combine with other check_for_empty_win methods
-    def check_forward_diag_for_empty_winner(board)
-      empty_winners = []
-
-      group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,n)})
-      if group_of_cells[0] == "empty_winner"
-        empty_winners.push([group_of_cells[1],group_of_cells[1]])
-      end
-
-      return empty_winners
-    end
-
-
-    #TODO - combine with other check_for_empty_win methods
-    def check_reverse_diag_for_empty_winner(board)
-      empty_winners = []
-
-      group_of_cells = check_cell_group(board, Proc.new {|n| board.space_contents(n,(board.dim_cols-1) - n)})
-      if group_of_cells[0] == "empty_winner"
-        empty_winners.push([group_of_cells[1],((board.dim_cols-1)-group_of_cells[1])])
-      end
-
-      return empty_winners
-    end
-
-
-    #TODO - work in progress
-    def check_board_for_empty_winnners(board)
       group_of_cells = []
 
       board.dim_rows.times do |i|
-        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(i,n)}))
-        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,i)}))
+        group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(i, n, board.space_contents(i,n))}))
+        group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(n, i, board.space_contents(n,i))}))
       end
-      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,n)}))
-      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,(board.dim_cols-1) - n)}))
+      group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(n, n, board.space_contents(n,n))}))
+      group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(n,(board.dim_cols-1) - n, board.space_contents(n,(board.dim_cols-1) - n))}))
 
       return return_value_of_check_for_empty_winner_method(group_of_cells)
     end
 
 
-    #TODO - work in progress
     def return_value_of_check_for_empty_winner_method(group_of_cells)
+      winners = []
       group_of_cells.length.times do |i|
         if group_of_cells[i][0] == "empty_winner"
-          return group_of_cells[i][1]
+          winners.push(group_of_cells[i][1])
         end
       end
-      return 0
+
+      if winners.length != 0
+        return winners
+      end
+      return []
     end
 
 
@@ -323,6 +267,7 @@ class Calculate
     end
 
 
+    #TODO - break up into smaller method
     def fill_out_wld_array(wld, board, row, col, ai_team, cur_team, depth)
       board.make_move(row, col, current_team(board))  # Make a hypothetical move
 
@@ -480,11 +425,11 @@ class Calculate
       group_of_cells = []
 
       board.dim_rows.times do |i|
-        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(i,n)}))
-        group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,i)}))
+        group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(i, n, board.space_contents(i,n))}))
+        group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(n, i, board.space_contents(n,i))}))
       end
-      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,n)}))
-      group_of_cells.push(check_cell_group(board, lambda {|n| board.space_contents(n,(board.dim_cols-1) - n)}))
+      group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(n, n, board.space_contents(n,n))}))
+      group_of_cells.push(check_cells_group(board, lambda {|n| Space.new(n, ((board.dim_cols-1) - n), board.space_contents(n,(board.dim_cols-1) - n))}))
 
       return return_value_of_check_for_win_method(group_of_cells)
     end
@@ -500,35 +445,34 @@ class Calculate
     end
 
 
-    #TODO - split into smaller methods
-    def check_cell_group(board, prc)
-      num_teams_encountered, empty_spaces_encountered, empty_space_location, current_team = 0, 0, 0, EMPTY
+    def check_cells_group(board, prc)
+      num_teams_encountered, empty_spaces_encountered, empty_space_location, current_team, space = 0, 0, 0, EMPTY, []
 
       board.dim_cols.times do |i|
-        current_space_in_group = prc.call(i)
-        if current_space_in_group == EMPTY
+        space.push(prc.call(i))
+        if space[i].val == EMPTY
           empty_space_location = i
           empty_spaces_encountered += 1
         else
           if current_team == EMPTY
-            current_team = current_space_in_group
+            current_team = space[i].val
             num_teams_encountered = 1
           end
-          if current_team != current_space_in_group
+          if current_team != space[i].val
             num_teams_encountered += 1
           end
         end
       end
 
-      return analyze_cell_group_data(num_teams_encountered, empty_spaces_encountered, current_team, empty_space_location)
+      return analyze_cells_group_data(num_teams_encountered, empty_spaces_encountered, current_team, empty_space_location, space)
     end
 
 
-    def analyze_cell_group_data(num_teams_encountered, empty_spaces_encountered, current_team, empty_space_location)
+    def analyze_cells_group_data(num_teams_encountered, empty_spaces_encountered, current_team, empty_space_location, space)
       if num_teams_encountered == 1 && empty_spaces_encountered == 0
         return ["win", current_team]
       elsif num_teams_encountered == 1 && empty_spaces_encountered == 1
-        return ["empty_winner", empty_space_location]
+        return ["empty_winner", [space[empty_space_location].row, space[empty_space_location].col]]
       end
 
       return ["nothing_interesting", 0]
