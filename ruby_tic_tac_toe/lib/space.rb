@@ -1,7 +1,8 @@
 require 'constants'
 
 class Space
-  attr_reader :row, :col, :val
+  attr_reader :row, :col
+  attr_accessor :val
 
   def initialize(*args)
     args = validate_args(args)

@@ -151,9 +151,9 @@ class GameEngine
 
 
   def game_over
-    if Calculate.x_win?(@board) == true
+    if Calculate.win?(@board, X) == true
       $stdout.puts "X wins!"
-    elsif Calculate.o_win?(@board) == true
+    elsif Calculate.win?(@board, O) == true
       $stdout.puts "O wins!"
     elsif Calculate.draw?(@board) == true
       $stdout.puts "Draw"

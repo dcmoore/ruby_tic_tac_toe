@@ -1,29 +1,41 @@
 require 'space'
 
 class Board
-  attr_reader :dim_rows, :dim_cols
+  attr_reader :dim_rows, :dim_cols, :spaces
 
   def initialize(rows, cols)
     @dim_rows = rows
     @dim_cols = cols
-    @board = Array.new(rows) {Array.new(cols,0)}
+#    @board = Array.new(rows) {Array.new(cols,0)}
+    initialize_spaces
   end
 
 
   def reset
-    @board = Array.new(@dim_rows) {Array.new(@dim_cols,0)}
-    @board
+#    @board = Array.new(@dim_rows) {Array.new(@dim_cols,0)}
+#    @board
+    initialize_spaces
   end
 
 
   def space_contents(row, col)
-    @board[row][col]
+#    @board[row][col]
+    @spaces.each do |space|
+      if space.row == row && space.col == col
+        return space.val
+      end
+    end
   end
 
 
   def make_move(row, col, team)
-    @board[row][col] = team
-    @board
+#    @board[row][col] = team
+#    @board
+    @spaces.each do |space|
+      if space.row == row && space.col == col
+        space.val = team
+      end
+    end
   end
 
 
@@ -31,7 +43,7 @@ class Board
     displayBlock = ""
     @dim_rows.times do |row|
       @dim_cols.times do |col|
-        displayBlock += "|" + convert_space_val_to_graphic(@board[row][col])
+        displayBlock += "|" + convert_space_val_to_graphic(space_contents(row, col))
       end
       displayBlock += "|\n"
     end
@@ -90,6 +102,12 @@ class Board
   private
 
   def initialize_spaces
-    #TODO
+    @spaces = []
+
+    @dim_rows.times do |row|
+      @dim_cols.times do |col|
+        @spaces.push(Space.new(row, col))
+      end
+    end
   end
 end

@@ -8,12 +8,13 @@ describe Board do
 
   it "make_move(row, col, team) - updates the game board to reflect a move by the specified team" do
     @board.make_move(0,0,1)
-    @board.make_move(1,1,2).should == [[1, 0, 0], [0, 2, 0], [0, 0, 0]]
+    @board.space_contents(0,0).should == 1
   end
 
   it "reset - clears all previous moves from the game board" do
     @board.make_move(0,0,2)
-    @board.reset.should == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    @board.reset
+    @board.space_contents(0,0).should == 0
   end
 
   it "space_contents(row, col) - returns the contents of the specified space" do
@@ -55,6 +56,10 @@ describe Board do
 
   it "dim_cols - returns the number of columns in the board" do
     @board.dim_cols.should == 3
+  end
+
+  it "spaces - returns the spaces in the board" do
+    @board.spaces.length.should == 9
   end
 
 

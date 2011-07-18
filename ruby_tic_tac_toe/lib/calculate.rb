@@ -295,12 +295,10 @@ class Calculate
 
 
     def add_recursed_wld_vals(temp_array, wld, board)
-      board.dim_rows.times do |r|
-        board.dim_cols.times do |c|
-          wld[r][c][0] += temp_array[r][c][0]
-          wld[r][c][1] += temp_array[r][c][1]
-          wld[r][c][2] += temp_array[r][c][2]
-        end
+      board.spaces.each do |space|
+        wld[space.row][space.col][0] += temp_array[space.row][space.col][0]
+        wld[space.row][space.col][1] += temp_array[space.row][space.col][1]
+        wld[space.row][space.col][2] += temp_array[space.row][space.col][2]
       end
 
       return wld
@@ -309,13 +307,11 @@ class Calculate
 
     def calculate_best_move(board, wld)
       best_move = [0, 0]
-      board.dim_rows.times do |row|
-        board.dim_cols.times do |col|
-          wld = add_one_so_you_dont_divide_by_zero(wld, row, col)
-          if wld[row][col] != [1,1,1]  # Ensures that the spaces being evaluated are empty spaces on the board
-            best_move = set_a_default_value_if_it_hasnt_already_been_set(best_move, row, col)
-            best_move = find_a_move_better_than_the_default(wld, best_move, row, col)
-          end
+      board.spaces.each do |space|
+        wld = add_one_so_you_dont_divide_by_zero(wld, space.row, space.col)
+        if wld[space.row][space.col] != [1,1,1]  # Ensures that the spaces being evaluated are empty spaces on the board
+          best_move = set_a_default_value_if_it_hasnt_already_been_set(best_move, space.row, space.col)
+          best_move = find_a_move_better_than_the_default(wld, best_move, space.row, space.col)
         end
       end
 
