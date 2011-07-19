@@ -58,9 +58,9 @@ class Calculate
         return empty_winner
       end
 
-      hard_coded_move = hard_coded_moves(board)
-      if hard_coded_move != -1
-        return hard_coded_move
+      optimized_move = optimize_the_algorithm(board)
+      if optimized_move != -1
+        return optimized_move
       end
 
       return -1
@@ -81,6 +81,7 @@ class Calculate
     end
 
 
+    #QUESTION - would this function be considered feature envy?
     def get_empty_winners_array(board)
       group_of_cells = []
 
@@ -124,21 +125,6 @@ class Calculate
     end
 
 
-    def hard_coded_moves(board)
-      optimized_move = optimize_the_algorithm(board)
-      if optimized_move != -1
-        return optimized_move
-      end
-
-      missed_trap_move = traps_that_the_algorithm_doesnt_pick_up(board)
-      if missed_trap_move != -1
-        return missed_trap_move
-      end
-
-      return -1
-    end
-
-
     def optimize_the_algorithm(board)
       if board.space_contents(1,1) == X && board.num_moves_made == 1
         return [0,0]
@@ -146,49 +132,6 @@ class Calculate
 
       if board.space_contents(1,1) == EMPTY
         return [1,1]
-      end
-
-      return -1
-    end
-
-
-    def traps_that_the_algorithm_doesnt_pick_up(board)
-      return_value1, return_value2 = corner_trap(board), triangle_trap(board)
-
-      if return_value1 != -1
-        return return_value1
-      elsif return_value2 != -1
-        return return_value2
-      end
-
-      return -1
-    end
-
-
-    CORNER_TRAPS = [
-	[[0, 1], [1, 0], [0, 0]],
-	[[0, 1], [1, 2], [0, 2]],
-	[[1, 0], [2, 1], [2, 0]],
-	[[1, 2], [2, 1], [2, 2]]]
-
-    def corner_trap(board)
-      CORNER_TRAPS.each do |s1, s2, s3|
-        if board.space_contents(s1[0], s1[1]) != 0 && (board.space_contents(s1[0], s1[1]) == board.space_contents(s2[0], s2[1])) && board.space_contents(s3[0], s3[1]) == EMPTY
-          return s3
-        end	
-      end
-
-      return -1	
-    end
-
-
-    def triangle_trap(board)
-      if board.num_moves_made == 3 && (board.space_contents(1,1) == X && board.space_contents(0,0) == X && board.space_contents(2,2) == O) || (board.space_contents(1,1) == X && board.space_contents(0,0) == O && board.space_contents(2,2) == X)
-        return [0,2]
-      end
-
-      if board.num_moves_made == 3 && (board.space_contents(1,1) == X && board.space_contents(0,2) == X && board.space_contents(2,0) == O) || (board.space_contents(1,1) == X && board.space_contents(0,2) == O && board.space_contents(2,0) == X)
-        return [2,2]
       end
 
       return -1
@@ -219,7 +162,7 @@ class Calculate
       end
 
       temp_array = create_wld_array(board, ai_team, current_team(board), depth+1)  # Recursively call ai_best_move at 1 more level of depth
-      wld = add_recursed_wld_vals(temp_array, wld, board)  # Add return value (array) of recursive call to wld array
+      wld = add_recursed_wld_vals(temp_array, wld, board, row, col)  # Add return value (array) of recursive call to wld array
       board.make_move(row, col, 0)  # Take back hypothetical move
 
       return [wld, board]
@@ -274,7 +217,7 @@ class Calculate
       wld[row][col][0] += 1
 
       if find_best_empty_winner(board, ai_team) != -1  # Heavily weighs traps
-        wld[row][col][0] += 3
+        wld[row][col][0] += 4
       end
 
       return wld
@@ -285,18 +228,18 @@ class Calculate
       wld[row][col][1] += 1
 
       if (find_best_empty_winner(board, X) != -1) || (find_best_empty_winner(board, O) != -1)  # Heavily weighs traps
-        wld[row][col][1] += 100000
+        wld[row][col][1] += 12
       end
 
       return wld
     end
 
 
-    def add_recursed_wld_vals(temp_array, wld, board)
+    def add_recursed_wld_vals(temp_array, wld, board, r, c)
       board.spaces.each do |space|
-        wld[space.row][space.col][0] += temp_array[space.row][space.col][0]
-        wld[space.row][space.col][1] += temp_array[space.row][space.col][1]
-        wld[space.row][space.col][2] += temp_array[space.row][space.col][2]
+        wld[r][c][0] += temp_array[space.row][space.col][0]
+        wld[r][c][1] += temp_array[space.row][space.col][1]
+        wld[r][c][2] += temp_array[space.row][space.col][2]
       end
 
       return wld
@@ -336,8 +279,8 @@ class Calculate
 
 
     def find_a_move_better_than_the_default(wld, best_move, row, col)
-      temp_score = ((2*wld[row][col][0]) + wld[row][col][2]) / (3*wld[row][col][1])
-      if temp_score > ((2*wld[best_move[0]][best_move[1]][0]) + wld[best_move[0]][best_move[1]][2]) / (3*wld[best_move[0]][best_move[1]][1])
+      temp_score = (wld[row][col][0] - wld[row][col][1])
+      if temp_score > (wld[best_move[0]][best_move[1]][0] - wld[best_move[0]][best_move[1]][1])
         best_move = [row, col]
       end
 
@@ -345,6 +288,7 @@ class Calculate
     end
 
 
+    #QUESTION - would this function be considered feature envy?
     def check_board_for_win(board)
       group_of_cells = []
 
@@ -370,6 +314,7 @@ class Calculate
 
 
     #TODO - split into smaller methods
+    #QUESTION - would this function be considered feature envy?
     def check_cell_group(board, prc)
       num_teams_encountered, empty_spaces_encountered, empty_space_location, current_team, space = 0, 0, 0, EMPTY, []
 

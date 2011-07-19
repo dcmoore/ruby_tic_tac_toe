@@ -155,14 +155,14 @@ describe Calculate do
   end
 
   def setup_triangle_trap
-    @board.make_move(1,1,X)
     @board.make_move(0,0,O)
+    @board.make_move(1,1,X)
     @board.make_move(2,2,X)
   end
 
   def setup_corner_trap
-    @board.make_move(0,1,O)
-    @board.make_move(1,2,O)
-    @board.make_move(1,1,X)
+    @board.make_move(0,1,X)
+    @board.make_move(1,2,X)
+    @board.make_move(1,1,O)
   end
 end
