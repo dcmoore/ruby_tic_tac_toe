@@ -67,19 +67,24 @@ describe Calculate do
     @board.reset
 
     setup_kiddie_corner_trap
-    Calculate.ai_best_move(@board).should_not == [0,2]
-    Calculate.ai_best_move(@board).should_not == [2,0]
+    best_move = Calculate.ai_best_move(@board)
+    best_move.should_not == [0,2]
+    best_move.should_not == [2,0]
     @board.reset
 
     setup_triangle_trap
-    Calculate.ai_best_move(@board).should_not == [0,1]
-    Calculate.ai_best_move(@board).should_not == [1,0]
-    Calculate.ai_best_move(@board).should_not == [2,1]
-    Calculate.ai_best_move(@board).should_not == [1,2]
+    best_move = Calculate.ai_best_move(@board)
+    best_move.should_not == [0,1]
+    best_move.should_not == [1,0]
+    best_move.should_not == [2,1]
+    best_move.should_not == [1,2]
     @board.reset
 
     setup_corner_trap
-    Calculate.ai_best_move(@board).should == [0,2]
+    best_move = Calculate.ai_best_move(@board)
+    best_move.should_not == [2,0]
+    best_move.should_not == [1,0]
+    best_move.should_not == [2,1]
     @board.reset
   end
 

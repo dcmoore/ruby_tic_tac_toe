@@ -81,7 +81,6 @@ class Calculate
     end
 
 
-    #QUESTION - would this function be considered feature envy?
     def get_empty_winners_array(board)
       group_of_cells = inspect_all_rows_cols_and_diags(board)
       return return_value_of_check_for_empty_winner_method(group_of_cells)
@@ -176,65 +175,27 @@ class Calculate
 
 
     def update_wld(row, col, ai_team, board, wld)
-      wld = update_wld_when_o_wins(row, col, ai_team, board, wld)
-      wld = update_wld_when_x_wins(row, col, ai_team, board, wld)
-      wld = update_wld_when_draw(row, col, ai_team, board, wld)
-
-      return wld
-    end
-
-
-    def update_wld_when_o_wins(row, col, ai_team, board, wld)
-      if win?(board, O) == true
-        if ai_team == O
-          wld = update_wins(wld, board, ai_team, row, col)
-        else
-          wld = update_losses(wld, board, ai_team, row, col)
-        end
+      if win?(board, ai_team) == true
+        wld = update_wld_helper(row, col, ai_team, board, wld, 0)
+      elsif win?(board, ai_team) == false
+        wld = update_wld_helper(row, col, ai_team, board, wld, 1)
+      elsif draw?(board) == true
+        wld = update_wld_helper(row, col, ai_team, board, wld, 2)
       end
 
       return wld
     end
 
 
-    def update_wld_when_x_wins(row, col, ai_team, board, wld)
-      if win?(board, X) == true
-        if ai_team == O
-          wld = update_losses(wld, board, ai_team, row, col)
-        else
-          wld = update_wins(wld, board, ai_team, row, col)
-        end
-      end
-
-      return wld
-    end
-
-
-    def update_wld_when_draw(row, col, ai_team, board, wld)
-      if draw?(board) == true
-        wld[row][col][2] += 1
-      end
-
-      return wld
-    end
-
-
-    def update_wins(wld, board, ai_team, row, col)
-      wld[row][col][0] += 1
+    def update_wld_helper(row, col, ai_team, board, wld, update_w_l_or_d)
+      wld[row][col][update_w_l_or_d] += 1
 
       if find_best_empty_winner(board, ai_team) != -1  # Heavily weighs traps
-        wld[row][col][0] += 4
-      end
-
-      return wld
-    end
-
-
-    def update_losses(wld, board, ai_team, row, col)
-      wld[row][col][1] += 1
-
-      if find_best_empty_winner(board, ai_team) != -1  # Heavily weighs traps
-        wld[row][col][1] += 12
+        if update_w_l_or_d == 0
+          wld[row][col][0] += 4
+        elsif update_w_l_or_d == 1
+          wld[row][col][1] += 12
+        end
       end
 
       return wld
@@ -294,7 +255,6 @@ class Calculate
     end
 
 
-    #QUESTION - would this function be considered feature envy?
     def check_board_for_win(board)
       group_of_cells = inspect_all_rows_cols_and_diags(board)
       return return_value_of_check_for_win_method(group_of_cells)
@@ -312,7 +272,6 @@ class Calculate
 
 
     #TODO - split into smaller methods
-    #QUESTION - would this function be considered feature envy?
     def check_cell_group(board, prc)
       num_teams_encountered, empty_spaces_encountered, empty_space_location, current_team, space = 0, 0, 0, EMPTY, []
 
