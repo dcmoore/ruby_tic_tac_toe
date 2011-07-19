@@ -83,6 +83,12 @@ class Calculate
 
     #QUESTION - would this function be considered feature envy?
     def get_empty_winners_array(board)
+      group_of_cells = inspect_all_rows_cols_and_diags(board)
+      return return_value_of_check_for_empty_winner_method(group_of_cells)
+    end
+
+
+    def inspect_all_rows_cols_and_diags(board)
       group_of_cells = []
 
       board.dim_rows.times do |i|
@@ -92,7 +98,7 @@ class Calculate
       group_of_cells.push(check_cell_group(board, lambda {|n| Space.new(n, n, board.space_contents(n,n))}))
       group_of_cells.push(check_cell_group(board, lambda {|n| Space.new(n,(board.dim_cols-1) - n, board.space_contents(n,(board.dim_cols-1) - n))}))
 
-      return return_value_of_check_for_empty_winner_method(group_of_cells)
+      return group_of_cells
     end
 
 
@@ -183,7 +189,7 @@ class Calculate
         if ai_team == O
           wld = update_wins(wld, board, ai_team, row, col)
         else
-          wld = update_wins(wld, board, ai_team, row, col)
+          wld = update_losses(wld, board, ai_team, row, col)
         end
       end
 
@@ -227,7 +233,7 @@ class Calculate
     def update_losses(wld, board, ai_team, row, col)
       wld[row][col][1] += 1
 
-      if (find_best_empty_winner(board, X) != -1) || (find_best_empty_winner(board, O) != -1)  # Heavily weighs traps
+      if find_best_empty_winner(board, ai_team) != -1  # Heavily weighs traps
         wld[row][col][1] += 12
       end
 
@@ -290,15 +296,7 @@ class Calculate
 
     #QUESTION - would this function be considered feature envy?
     def check_board_for_win(board)
-      group_of_cells = []
-
-      board.dim_rows.times do |i|
-        group_of_cells.push(check_cell_group(board, lambda {|n| Space.new(i, n, board.space_contents(i,n))}))
-        group_of_cells.push(check_cell_group(board, lambda {|n| Space.new(n, i, board.space_contents(n,i))}))
-      end
-      group_of_cells.push(check_cell_group(board, lambda {|n| Space.new(n, n, board.space_contents(n,n))}))
-      group_of_cells.push(check_cell_group(board, lambda {|n| Space.new(n, ((board.dim_cols-1) - n), board.space_contents(n,(board.dim_cols-1) - n))}))
-
+      group_of_cells = inspect_all_rows_cols_and_diags(board)
       return return_value_of_check_for_win_method(group_of_cells)
     end
 
